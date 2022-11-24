@@ -15,14 +15,17 @@ struct ContentView: View {
     @State var userStopped = false
     @State var disableInput = false
     @State var isUnauthorized = false
-    
-    @StateObject var screenRecorder = ScreenRecorder()
-    
+    @ObservedObject var screenRecorder: ScreenRecorder
+
     var body: some View {
+        /*
          HSplitView {
+
             ConfigurationView(screenRecorder: screenRecorder, userStopped: $userStopped)
                 .frame(minWidth: 280, maxWidth: 280)
                 .disabled(disableInput)
+         */
+        ZStack{
             screenRecorder.capturePreview
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .aspectRatio(screenRecorder.contentSize, contentMode: .fit)
@@ -55,7 +58,7 @@ struct ContentView: View {
                 }
             }
         }
-        .navigationTitle("Screen Capture Sample")
+        .navigationTitle("Screen Recorder")
         .onAppear {
             Task {
                 if await screenRecorder.canRecord {
@@ -66,11 +69,5 @@ struct ContentView: View {
                 }
             }
         }
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
     }
 }
