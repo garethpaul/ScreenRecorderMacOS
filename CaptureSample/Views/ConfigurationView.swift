@@ -16,7 +16,7 @@ struct ConfigurationView: View {
     
     private let alignmentOffset: CGFloat = 10
     
-    @StateObject private var audioPlayer = AudioPlayer()
+    //@StateObject private var audioPlayer = AudioPlayer()
     @ObservedObject var screenRecorder: ScreenRecorder
     @Binding var userStopped: Bool
     
@@ -67,7 +67,7 @@ struct ConfigurationView: View {
                         // Capturing app audio is only possible when the sample is included in the stream.
                         // Ensure the audio stops playing if the user enables the "Exclude app from stream" checkbox.
                         if screenRecorder.isAppExcluded {
-                            audioPlayer.stop()
+                            //audioPlayer.stop()
                         }
                     }
                 
@@ -81,15 +81,17 @@ struct ConfigurationView: View {
                 Toggle("Exclude app audio", isOn: $screenRecorder.isAppAudioExcluded)
                     .disabled(screenRecorder.isAppExcluded)
                 AudioLevelsView(audioLevelsProvider: screenRecorder.audioLevelsProvider)
+                /*
                 Button {
                     if !audioPlayer.isPlaying {
-                        audioPlayer.play()
+                       // audioPlayer.play()
                     } else {
-                        audioPlayer.stop()
+                       // audioPlayer.stop()
                     }
                 } label: {
                     Text("\(!audioPlayer.isPlaying ? "Play" : "Stop") App Audio")
                 }
+                */
                 .disabled(screenRecorder.isAppExcluded)
                 Spacer()
             }

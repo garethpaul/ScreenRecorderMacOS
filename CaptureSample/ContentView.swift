@@ -19,7 +19,7 @@ struct ContentView: View {
     @StateObject var screenRecorder = ScreenRecorder()
     
     var body: some View {
-        HSplitView {
+         HSplitView {
             ConfigurationView(screenRecorder: screenRecorder, userStopped: $userStopped)
                 .frame(minWidth: 280, maxWidth: 280)
                 .disabled(disableInput)

@@ -11,6 +11,8 @@ import Combine
 import OSLog
 import SwiftUI
 
+
+
 /// A provider of audio levels from the captured samples.
 class AudioLevelsProvider: ObservableObject {
     @Published var audioLevels = AudioLevels.zero
@@ -26,6 +28,7 @@ class ScreenRecorder: ObservableObject {
     }
     
     private let logger = Logger()
+    private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
     
     @Published var isRunning = false
     
@@ -112,7 +115,8 @@ class ScreenRecorder: ObservableObject {
     func start() async {
         // Exit early if already running.
         guard !isRunning else { return }
-        
+
+
         if !isSetup {
             // Starting polling for available screen content.
             await monitorAvailableContent()
@@ -129,8 +133,16 @@ class ScreenRecorder: ObservableObject {
             let filter = contentFilter
             // Update the running state.
             isRunning = true
+
+            //movie.startRecording(height: Int(contentSize.width, width: Int(contentSize.height))
+
+
             // Start the stream and await new video frames.
-            for try await frame in captureEngine.startCapture(configuration: config, filter: filter) {
+            for try await frame in captureEngine.startCapture(configuration: config, filter: filter, movie: movie) {
+                // Update the preview with the new frame.
+                // This call is thread-safe.
+
+
                 capturePreview.updateFrame(frame)
                 if contentSize != frame.size {
                     // Update the content size if it changed.

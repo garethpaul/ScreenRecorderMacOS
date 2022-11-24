@@ -10,26 +10,26 @@ import AVFoundation
 
 class AudioPlayer: ObservableObject {
     
-    let audioPlayer: AVAudioPlayer
+    //let audioPlayer: AVAudioPlayer
     
     @Published var isPlaying = false
     
-    init() {
-        guard let url = Bundle.main.url(forResource: "Synth", withExtension: "aif") else {
-            fatalError("Couldn't find Synth.aif in the app bundle.")
-        }
-        audioPlayer = try! AVAudioPlayer(contentsOf: url, fileTypeHint: AVFileType.aiff.rawValue)
-        audioPlayer.numberOfLoops = -1 // Loop indefinitely.
-        audioPlayer.prepareToPlay()
-    }
+    //init() {
+        //guard let url = Bundle.main.url(forResource: "Synth", withExtension: "aif") else {
+        //    fatalError("Couldn't find Synth.aif in the app bundle.")
+        //}
+        //audioPlayer = try! AVAudioPlayer(contentsOf: url, fileTypeHint: AVFileType.aiff.rawValue)
+        //audioPlayer.numberOfLoops = -1 // Loop indefinitely.
+        //audioPlayer.prepareToPlay()
+    //}
     
     func play() {
-        audioPlayer.play()
+        //audioPlayer.play()
         isPlaying = true
     }
     
     func stop() {
-        audioPlayer.stop()
+        //audioPlayer.stop()
         isPlaying = false
     }
 }
