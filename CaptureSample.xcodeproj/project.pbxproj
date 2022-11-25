@@ -14,6 +14,7 @@
 		C3CEBB3A292DA12200CFC958 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3CEBB39292DA12200CFC958 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		C3CEBB3C292DA16D00CFC958 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3CEBB3B292DA16D00CFC958 /* AVFAudio.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		C3EFDAD7292DE1A50022F224 /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3EFDAD6292DE1A50022F224 /* Record.swift */; };
+		C3EFDAD92930392D0022F224 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3EFDAD82930392D0022F224 /* Extensions.swift */; };
 		C44093732816EC8800FB8386 /* Synth.aif in Resources */ = {isa = PBXBuildFile; fileRef = C44093722816EC8800FB8386 /* Synth.aif */; };
 		C44093752816EC9C00FB8386 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44093742816EC9C00FB8386 /* AudioPlayer.swift */; };
 		C470F0812811C5CB00D29309 /* ScreenRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C470F0802811C5CB00D29309 /* ScreenRecorder.swift */; };
@@ -40,6 +41,7 @@
 		C3CEBB39292DA12200CFC958 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		C3CEBB3B292DA16D00CFC958 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		C3EFDAD6292DE1A50022F224 /* Record.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Record.swift; sourceTree = "<group>"; };
+		C3EFDAD82930392D0022F224 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		C44093722816EC8800FB8386 /* Synth.aif */ = {isa = PBXFileReference; lastKnownFileType = file; path = Synth.aif; sourceTree = "<group>"; };
 		C44093742816EC9C00FB8386 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		C470F0802811C5CB00D29309 /* ScreenRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRecorder.swift; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				C470F0802811C5CB00D29309 /* ScreenRecorder.swift */,
+				C3EFDAD82930392D0022F224 /* Extensions.swift */,
 				C4B0DABD276BA4B50015082A /* CaptureEngine.swift */,
 				C3EFDAD6292DE1A50022F224 /* Record.swift */,
 				C471DFF92809F440001D24C9 /* PowerMeter.swift */,
@@ -197,7 +200,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1330;
-				LastUpgradeCheck = 1400;
+				LastUpgradeCheck = 1410;
 				ORGANIZATIONNAME = Apple;
 				TargetAttributes = {
 					C4B0DAA6276BA4460015082A = {
@@ -249,6 +252,7 @@
 				C4B0DABA276BA49F0015082A /* CaptureSampleApp.swift in Sources */,
 				C471DFFE280A0968001D24C9 /* AudioLevelsView.swift in Sources */,
 				C4EB90D428108656006A595C /* ConfigurationView.swift in Sources */,
+				C3EFDAD92930392D0022F224 /* Extensions.swift in Sources */,
 				C4729DA52821BFAD00AAC477 /* MaterialView.swift in Sources */,
 				C3EFDAD7292DE1A50022F224 /* Record.swift in Sources */,
 				C4B0DABE276BA4B50015082A /* ContentView.swift in Sources */,
@@ -316,7 +320,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx13.0;
+				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -373,7 +377,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx13.0;
+				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
@@ -398,6 +402,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -434,6 +439,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

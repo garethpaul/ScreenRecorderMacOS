@@ -29,7 +29,13 @@ class ScreenRecorder: ObservableObject {
     
     private let logger = Logger()
     private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
-    
+
+    @Published var isTimerRunning = false
+    @Published var startTime =  Date()
+    @Published var timerString = "00:00"
+
+    @Published var recordTimer: Publishers.Autoconnect<Timer.TimerPublisher> = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
     @Published var isRunning = false
     
     // MARK: - Video Properties
@@ -115,7 +121,8 @@ class ScreenRecorder: ObservableObject {
     func start() async {
         // Exit early if already running.
         guard !isRunning else { return }
-
+        startTime = Date()
+        recordTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
         if !isSetup {
             // Starting polling for available screen content.
@@ -162,6 +169,7 @@ class ScreenRecorder: ObservableObject {
         await captureEngine.stopCapture()
         stopAudioMetering()
         isRunning = false
+        startTime = Date()
     }
     
     private func startAudioMetering() {

@@ -11,21 +11,21 @@ import OSLog
 import Combine
 
 struct ContentView: View {
-    
-    @State var userStopped = false
+
+    @AppStorage("userStopped") var userStopped: Bool = false
     @State var disableInput = false
     @State var isUnauthorized = false
     @ObservedObject var screenRecorder: ScreenRecorder
 
     var body: some View {
-        /*
-         HSplitView {
-
+         TabView {
             ConfigurationView(screenRecorder: screenRecorder, userStopped: $userStopped)
                 .frame(minWidth: 280, maxWidth: 280)
                 .disabled(disableInput)
-         */
-        ZStack{
+                .tabItem {
+                            Label("Configuration", systemImage: "tray.and.arrow.down")
+                        }
+
             screenRecorder.capturePreview
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .aspectRatio(screenRecorder.contentSize, contentMode: .fit)
@@ -39,6 +39,9 @@ struct ContentView: View {
                             .background(Color(white: 0.0, opacity: 0.5))
                     }
                 }
+                .tabItem {
+                            Label("Preview", systemImage: "tray.and.arrow.down")
+                        }
         }
         .overlay {
             if isUnauthorized {
