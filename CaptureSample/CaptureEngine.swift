@@ -25,7 +25,6 @@ struct CapturedFrame {
 /// An object that wraps an instance of `SCStream`, and returns its results as an `AsyncThrowingStream`.
 class CaptureEngine: NSObject, @unchecked Sendable {
     
-    var moc: NSManagedObjectContext?
     private let logger = Logger()
     var movie: MovieRecorder = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
 
@@ -82,15 +81,14 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             // save to CoreData
             do {
                 let endTime = Date()
-                let dc = DataController()
-                let moc = dc.container.viewContext
-                let videoEntry = VideoEntry(context: moc)
+
+                let videoEntry = VideoEntry(context: DataController.shared.moc)
                 videoEntry.id = UUID()
-                videoEntry.url = "test"
+                videoEntry.url = url.description
                 videoEntry.startTime = self.startTime
                 videoEntry.endTime = endTime
                 print(videoEntry)
-                try moc.save()
+                try DataController.shared.save()
             } catch {
                 logger.error("Failed to save the new video: \(String(describing: error))")
             }

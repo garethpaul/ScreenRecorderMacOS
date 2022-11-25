@@ -30,7 +30,6 @@ class ScreenRecorder: ObservableObject {
     private let logger = Logger()
     private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
 
-    @Environment(\.managedObjectContext) var moc
 
     @Published var isTimerRunning = false
     @Published var startTime =  Date()
