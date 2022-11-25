@@ -16,13 +16,16 @@ struct CaptureSampleApp: App {
 
     @AppStorage("timerString") var timerString = "00:00"
 
+    @StateObject private var dataController = DataController()
 
     var body: some Scene {
         WindowGroup {
             ContentView(userStopped: userStopped, screenRecorder: screenRecorder)
                 .frame(minWidth: 960, minHeight: 724)
                 .background(.black)
+                .environment(\.managedObjectContext, dataController.container.viewContext)
         }.windowStyle(HiddenTitleBarWindowStyle())
+
         MenuBarExtra{
             MenuView(screenRecorder: screenRecorder, currentFocus: currentFocus, userStopped: userStopped)
         }label: {

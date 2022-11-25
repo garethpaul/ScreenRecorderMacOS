@@ -30,6 +30,8 @@ class ScreenRecorder: ObservableObject {
     private let logger = Logger()
     private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
 
+    @Environment(\.managedObjectContext) var moc
+
     @Published var isTimerRunning = false
     @Published var startTime =  Date()
     @Published var timerString = "00:00"
@@ -86,6 +88,7 @@ class ScreenRecorder: ObservableObject {
     
     // The object that manages the SCStream.
     private let captureEngine = CaptureEngine()
+
     
     private var isSetup = false
     

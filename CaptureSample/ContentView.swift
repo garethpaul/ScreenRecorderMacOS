@@ -17,14 +17,29 @@ struct ContentView: View {
     @State var isUnauthorized = false
     @ObservedObject var screenRecorder: ScreenRecorder
 
+    @Environment(\.managedObjectContext) var moc
+    @FetchRequest(sortDescriptors: []) var videos: FetchedResults<VideoEntry>
+
+
     var body: some View {
          TabView {
-            ConfigurationView(screenRecorder: screenRecorder, userStopped: $userStopped)
-                .frame(minWidth: 280, maxWidth: 280)
-                .disabled(disableInput)
+             VStack{
+                 ConfigurationView(screenRecorder: screenRecorder, userStopped: $userStopped)
+                     .frame(minWidth: 280, maxWidth: 280)
+                     .disabled(disableInput)
+
+                 List(videos) { video in
+                     Text(video.url ?? "Unknown")
+                 }
+
+
+             }
+
+
                 .tabItem {
                             Label("Configuration", systemImage: "tray.and.arrow.down")
                         }
+
 
             screenRecorder.capturePreview
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

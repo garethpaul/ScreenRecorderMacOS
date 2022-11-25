@@ -24,9 +24,12 @@ struct CapturedFrame {
 
 /// An object that wraps an instance of `SCStream`, and returns its results as an `AsyncThrowingStream`.
 class CaptureEngine: NSObject, @unchecked Sendable {
-
+    
+    var moc: NSManagedObjectContext?
     private let logger = Logger()
     var movie: MovieRecorder = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
+
+
 
     private var stream: SCStream?
     private let videoSampleBufferQueue = DispatchQueue(label: "com.example.apple-samplecode.VideoSampleBufferQueue")
@@ -39,6 +42,8 @@ class CaptureEngine: NSObject, @unchecked Sendable {
     // Store the the startCapture continuation, so that you can cancel it when you call stopCapture().
     private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
 
+    private var startTime = Date()
+
     /// - Tag: StartCapture
     func startCapture(configuration: SCStreamConfiguration, filter: SCContentFilter, movie: MovieRecorder) -> AsyncThrowingStream<CapturedFrame, Error> {
         AsyncThrowingStream<CapturedFrame, Error> { continuation in
@@ -48,6 +53,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             streamOutput.capturedFrameHandler = { continuation.yield($0) }
             streamOutput.pcmBufferHandler = { self.powerMeter.process(buffer: $0) }
             self.movie = streamOutput.movie!
+            self.startTime = Date()
             self.movie.startRecording(height: Int(configuration.height), width: Int(configuration.width))
 
             do {
@@ -72,8 +78,23 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             continuation?.finish(throwing: error)
         }
         powerMeter.processSilence()
-        self.movie.stopRecording { url in
-            print(url)
+        self.movie.stopRecording { [self] url in
+            // save to CoreData
+            do {
+                let endTime = Date()
+                let dc = DataController()
+                let moc = dc.container.viewContext
+                let videoEntry = VideoEntry(context: moc)
+                videoEntry.id = UUID()
+                videoEntry.url = "test"
+                videoEntry.startTime = self.startTime
+                videoEntry.endTime = endTime
+                print(videoEntry)
+                try moc.save()
+            } catch {
+                logger.error("Failed to save the new video: \(String(describing: error))")
+            }
+
         }
     }
 
