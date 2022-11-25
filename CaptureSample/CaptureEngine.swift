@@ -88,7 +88,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
                 videoEntry.startTime = self.startTime
                 videoEntry.endTime = endTime
                 print(videoEntry)
-                try DataController.shared.save()
+                try? DataController.shared.save()
             } catch {
                 logger.error("Failed to save the new video: \(String(describing: error))")
             }

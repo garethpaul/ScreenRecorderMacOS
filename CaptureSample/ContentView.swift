@@ -9,6 +9,7 @@ import SwiftUI
 import ScreenCaptureKit
 import OSLog
 import Combine
+import AVKit
 
 struct ContentView: View {
 
@@ -18,7 +19,10 @@ struct ContentView: View {
     @ObservedObject var screenRecorder: ScreenRecorder
 
     @Environment(\.managedObjectContext) var moc
-    @FetchRequest(sortDescriptors: []) var videos: FetchedResults<VideoEntry>
+    @FetchRequest(sortDescriptors: [SortDescriptor(\.endTime, order: .reverse)]) var videos: FetchedResults<VideoEntry>
+
+    @State var player = AVPlayer()
+    let videoUrl = "https://bitmovin-a.akamaihd.net/content/dataset/multi-codec/hevc/stream_fmp4.m3u8"
 
 
     var body: some View {
@@ -57,6 +61,14 @@ struct ContentView: View {
                 .tabItem {
                             Label("Preview", systemImage: "tray.and.arrow.down")
                         }
+
+             VideoPlayer(player: player)
+                             .onAppear() {
+                                 player = AVPlayer(url: URL(string: videos[0].url!)!)
+                                 player.play()
+                             }
+
+                 .tabItem{ Label("Last Recording", systemImage: "tray")}
         }
         .overlay {
             if isUnauthorized {
