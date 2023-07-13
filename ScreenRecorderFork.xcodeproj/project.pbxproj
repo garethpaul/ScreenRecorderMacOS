@@ -54,7 +54,7 @@
 		C471DFF92809F440001D24C9 /* PowerMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMeter.swift; sourceTree = "<group>"; };
 		C471DFFD280A0968001D24C9 /* AudioLevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLevelsView.swift; sourceTree = "<group>"; };
 		C4729DA42821BFAD00AAC477 /* MaterialView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialView.swift; sourceTree = "<group>"; };
-		C4B0DAA7276BA4460015082A /* ScreenRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4B0DAA7276BA4460015082A /* ScreenRecorderFork.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenRecorderFork.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4B0DAAE276BA4480015082A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../CaptureSample/Assets.xcassets; sourceTree = "<group>"; };
 		C4B0DAB1276BA4480015082A /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		C4B0DAB3276BA4480015082A /* CaptureSample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = CaptureSample.entitlements; path = ../CaptureSample/CaptureSample.entitlements; sourceTree = "<group>"; };
@@ -140,7 +140,7 @@
 		C4B0DAA8276BA4460015082A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C4B0DAA7276BA4460015082A /* ScreenRecorder.app */,
+				C4B0DAA7276BA4460015082A /* ScreenRecorderFork.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -184,9 +184,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C4B0DAA6276BA4460015082A /* ScreenRecorder */ = {
+		C4B0DAA6276BA4460015082A /* ScreenRecorderFork */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C4B0DAB6276BA4480015082A /* Build configuration list for PBXNativeTarget "ScreenRecorder" */;
+			buildConfigurationList = C4B0DAB6276BA4480015082A /* Build configuration list for PBXNativeTarget "ScreenRecorderFork" */;
 			buildPhases = (
 				C4B0DAA3276BA4460015082A /* Sources */,
 				C4B0DAA4276BA4460015082A /* Frameworks */,
@@ -196,9 +196,9 @@
 			);
 			dependencies = (
 			);
-			name = ScreenRecorder;
+			name = ScreenRecorderFork;
 			productName = CaptureIt;
-			productReference = C4B0DAA7276BA4460015082A /* ScreenRecorder.app */;
+			productReference = C4B0DAA7276BA4460015082A /* ScreenRecorderFork.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -218,7 +218,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C4B0DAA2276BA4460015082A /* Build configuration list for PBXProject "ScreenRecorder" */;
+			buildConfigurationList = C4B0DAA2276BA4460015082A /* Build configuration list for PBXProject "ScreenRecorderFork" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -231,7 +231,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C4B0DAA6276BA4460015082A /* ScreenRecorder */,
+				C4B0DAA6276BA4460015082A /* ScreenRecorderFork */,
 			);
 		};
 /* End PBXProject section */
@@ -410,7 +410,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"CaptureSample/Preview Content\"";
-				DEVELOPMENT_TEAM = 53AF9EMAN4;
+				DEVELOPMENT_TEAM = KAN7CPJNZ3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -471,7 +471,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C4B0DAA2276BA4460015082A /* Build configuration list for PBXProject "ScreenRecorder" */ = {
+		C4B0DAA2276BA4460015082A /* Build configuration list for PBXProject "ScreenRecorderFork" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C4B0DAB4276BA4480015082A /* Debug */,
@@ -480,7 +480,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C4B0DAB6276BA4480015082A /* Build configuration list for PBXNativeTarget "ScreenRecorder" */ = {
+		C4B0DAB6276BA4480015082A /* Build configuration list for PBXNativeTarget "ScreenRecorderFork" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C4B0DAB7276BA4480015082A /* Debug */,

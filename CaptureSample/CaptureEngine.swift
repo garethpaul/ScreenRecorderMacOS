@@ -142,6 +142,7 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
             // Create an AVAudioPCMBuffer from an audio sample buffer.
             guard let samples = createPCMBuffer(for: sampleBuffer) else { return }
             pcmBufferHandler?(samples)
+            movie?.recordAudio(sampleBuffer: sampleBuffer)
         @unknown default:
             fatalError("Encountered unknown stream output type: \(outputType)")
         }
@@ -182,15 +183,12 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
     }
 
     // Creates an AVAudioPCMBuffer instance on which to perform an average and peak audio level calculation.
-    private func createPCMBuffer(for sampleBuffer: CMSampleBuffer) -> AVAudioPCMBuffer? {
-        var ablPointer: UnsafePointer<AudioBufferList>?
-        try? sampleBuffer.withAudioBufferList { audioBufferList, blockBuffer in
-            ablPointer = audioBufferList.unsafePointer
+    func createPCMBuffer(for sampleBuffer: CMSampleBuffer) -> AVAudioPCMBuffer? {
+        try? sampleBuffer.withAudioBufferList { audioBufferList, _ -> AVAudioPCMBuffer? in
+            guard let absd = sampleBuffer.formatDescription?.audioStreamBasicDescription else { return nil }
+            guard let format = AVAudioFormat(standardFormatWithSampleRate: absd.mSampleRate, channels: absd.mChannelsPerFrame) else { return nil }
+            return AVAudioPCMBuffer(pcmFormat: format, bufferListNoCopy: audioBufferList.unsafePointer)
         }
-        guard let audioBufferList = ablPointer,
-              let absd = sampleBuffer.formatDescription?.audioStreamBasicDescription,
-              let format = AVAudioFormat(standardFormatWithSampleRate: absd.mSampleRate, channels: absd.mChannelsPerFrame) else { return nil }
-        return AVAudioPCMBuffer(pcmFormat: format, bufferListNoCopy: audioBufferList)
     }
 
     func stream(_ stream: SCStream, didStopWithError error: Error) {
