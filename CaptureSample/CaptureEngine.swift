@@ -22,6 +22,115 @@ struct CapturedFrame {
     var size: CGSize { contentRect.size }
 }
 
+class AudioCaptureEngine: NSObject, @unchecked Sendable {
+    
+    private let logger = Logger()
+    var audio: AudioRecorder = AudioRecorder(audioSettings: [:])
+    
+    private var stream: SCStream?
+    private let audioSampleBufferQueue = DispatchQueue(label: "com.example.apple-samplecode.AudioSampleBufferQueue")
+    
+    // Performs average and peak power calculations on the audio samples.
+    private let powerMeter = PowerMeter()
+    var audioLevels: AudioLevels { powerMeter.levels }
+
+    // Store the the startCapture continuation, so that you can cancel it when you call stopCapture().
+    private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
+
+    private var startTime = Date()
+    
+    func startCapture(configuration: SCStreamConfiguration, filter: SCContentFilter, audio: AudioRecorder) -> AsyncThrowingStream<CapturedFrame, Error> {
+        AsyncThrowingStream<CapturedFrame, Error> { continuation in
+            // The stream output object.
+            let streamOutput = CaptureEngineAudioOutput()
+            streamOutput.audio = audio
+            streamOutput.pcmBufferHandler = { self.powerMeter.process(buffer: $0) }
+            self.audio = streamOutput.audio!
+            self.startTime = Date()
+            self.audio.startRecording()
+
+            do {
+                stream = SCStream(filter: filter, configuration: configuration, delegate: streamOutput)
+
+                try stream?.addStreamOutput(streamOutput, type: .audio, sampleHandlerQueue: audioSampleBufferQueue)
+
+                stream?.startCapture()
+            } catch {
+                debugPrint("Error: during start capture!")
+            }
+        }
+    }
+    
+    func stopCapture() async {
+        do {
+            try await stream?.stopCapture()
+            continuation?.finish()
+        } catch {
+            debugPrint("Error: during start capture!")
+        }
+        powerMeter.processSilence()
+        self.audio.stopRecording { [self] url in
+            // save to CoreData
+            do {
+                let endTime = Date()
+
+                let videoEntry = VideoEntry(context: DataController.shared.moc)
+                videoEntry.id = UUID()
+                videoEntry.url = url.description
+                videoEntry.startTime = self.startTime
+                videoEntry.endTime = endTime
+                print(videoEntry)
+                try? DataController.shared.save()
+            } catch {
+                logger.error("Failed to save the new audio: \(String(describing: error))")
+            }
+
+        }
+    }
+
+    /// - Tag: UpdateStreamConfiguration
+    func update(configuration: SCStreamConfiguration, filter: SCContentFilter) async {
+        do {
+            try await stream?.updateConfiguration(configuration)
+            try await stream?.updateContentFilter(filter)
+        } catch {
+            logger.error("Failed to update the stream session: \(String(describing: error))")
+        }
+    }
+
+}
+
+private class CaptureEngineAudioOutput: NSObject, SCStreamOutput, SCStreamDelegate {
+    var audio: AudioRecorder?
+    
+    var pcmBufferHandler: ((AVAudioPCMBuffer) -> Void)?
+    
+    func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
+        guard sampleBuffer.isValid else { return }
+        
+        switch outputType {
+        case .screen:
+            break
+        case .audio:
+            guard let samples = createPCMBuffer(for: sampleBuffer) else { return }
+            pcmBufferHandler?(samples)
+            audio?.recordAudio(sampleBuffer: sampleBuffer)
+        @unknown default:
+            fatalError("Encountered unknown stream output type: \(outputType)")
+        }
+        
+    }
+    
+    // Creates an AVAudioPCMBuffer instance on which to perform an average and peak audio level calculation.
+    func createPCMBuffer(for sampleBuffer: CMSampleBuffer) -> AVAudioPCMBuffer? {
+        try? sampleBuffer.withAudioBufferList { audioBufferList, _ -> AVAudioPCMBuffer? in
+            guard let absd = sampleBuffer.formatDescription?.audioStreamBasicDescription else { return nil }
+            guard let format = AVAudioFormat(standardFormatWithSampleRate: absd.mSampleRate, channels: absd.mChannelsPerFrame) else { return nil }
+            return AVAudioPCMBuffer(pcmFormat: format, bufferListNoCopy: audioBufferList.unsafePointer)
+        }
+    }
+}
+
 /// An object that wraps an instance of `SCStream`, and returns its results as an `AsyncThrowingStream`.
 class CaptureEngine: NSObject, @unchecked Sendable {
     

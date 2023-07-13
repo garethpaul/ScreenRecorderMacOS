@@ -28,8 +28,9 @@ class ScreenRecorder: ObservableObject {
     }
     
     private let logger = Logger()
-    private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
-
+    
+//    private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
+    private let audio = AudioRecorder(audioSettings: [:])
 
     @Published var isTimerRunning = false
     @Published var startTime =  Date()
@@ -86,7 +87,8 @@ class ScreenRecorder: ObservableObject {
     private var audioMeterCancellable: AnyCancellable?
     
     // The object that manages the SCStream.
-    private let captureEngine = CaptureEngine()
+//    private let captureEngine = CaptureEngine()
+    private let captureEngine = AudioCaptureEngine()
 
     
     private var isSetup = false
@@ -137,32 +139,15 @@ class ScreenRecorder: ObservableObject {
             startAudioMetering()
         }
         
-        do {
-            let config = streamConfiguration
-            let filter = contentFilter
-            // Update the running state.
-            isRunning = true
+        let config = streamConfiguration
+        let filter = contentFilter
+        // Update the running state.
+        isRunning = true
 
-            //movie.startRecording(height: Int(contentSize.width, width: Int(contentSize.height))
+        //movie.startRecording(height: Int(contentSize.width, width: Int(contentSize.height))
 
-
-            // Start the stream and await new video frames.
-            for try await frame in captureEngine.startCapture(configuration: config, filter: filter, movie: movie) {
-                // Update the preview with the new frame.
-                // This call is thread-safe.
-
-
-                capturePreview.updateFrame(frame)
-                if contentSize != frame.size {
-                    // Update the content size if it changed.
-                    contentSize = frame.size
-                }
-            }
-        } catch {
-            logger.error("\(error.localizedDescription)")
-            // Unable to start the stream. Set the running state to false.
-            isRunning = false
-        }
+        // Start the stream
+        captureEngine.startCapture(configuration: config, filter: filter, audio: audio)
     }
     
     /// Stops capturing screen content.

@@ -36,7 +36,7 @@ class AudioRecorder {
         return nil
     }
     
-    func startRecording(height: Int, width: Int) {
+    func startRecording() {
         let outputFileName = NSUUID().uuidString
         let filePath = self.append(toPath: self.documentDirectory(),
                                              withPathComponent: outputFileName)
