@@ -19,6 +19,7 @@ Priority:
 - Keep recording permission checks visible
 - Store recordings and metadata in documented local locations
 - Keep playback tolerant of an empty or invalid recording history
+- Keep completed maintenance plans under `docs/plans`
 - Maintain README notes for known recording bugs
 
 Next priorities:

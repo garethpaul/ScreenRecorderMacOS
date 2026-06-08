@@ -13,7 +13,12 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 
 - `README.md` - project overview and local usage notes
 - `CaptureSample` - source or example code
+- `CHANGES.md` - maintenance history for capture safety checks
+- `Makefile` - local verification entry points
+- `docs/plans` - completed maintenance plans for the current baseline
 - `LICENSE` - source or example code
+- `plans` - historical implementation notes
+- `scripts` - static project and behavior validators
 - `ScreenRecorder.xcodeproj` - Xcode project file
 - `SECURITY.md` - security reporting and disclosure guidance
 - `VISION.md` - project direction and maintenance guardrails
@@ -53,6 +58,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   signing disabled.
 - Static behavior checks cover capture crash paths, recording file URL
   creation, saved URL persistence, and empty playback history handling.
+- Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
 
@@ -76,6 +82,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-08-screen-recorder-macos-baseline.md` for the
+  canonical capture and recording safety baseline.
 
 ## Contributing
 

@@ -15,3 +15,5 @@
 - Avoided crash-only handling for unknown stream output types and malformed
   frame metadata.
 - Made display/window content filters fail closed when no source is selected.
+- Added canonical `docs/plans` coverage and made project checks require
+  completed plans.
