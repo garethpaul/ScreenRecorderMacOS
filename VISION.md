@@ -40,7 +40,6 @@ Canonical security policy and reporting:
 
 - [`SECURITY.md`](SECURITY.md)
 
-
 Screen recording can capture sensitive information and audio. The app should
 make recording state obvious, keep files local by default, and avoid hidden
 capture, upload, or telemetry behavior.
