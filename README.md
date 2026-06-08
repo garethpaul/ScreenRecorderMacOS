@@ -57,7 +57,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   installed, the `build` target also runs the shared Xcode scheme with code
   signing disabled.
 - Static behavior checks cover capture crash paths, recording file URL
-  creation, saved URL persistence, and empty playback history handling.
+  creation, saved URL persistence, empty playback history handling, and
+  prevention of hardcoded remote player URLs.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -84,6 +85,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-screen-recorder-macos-baseline.md` for the
   canonical capture and recording safety baseline.
+- See `docs/plans/2026-06-08-local-player-viewer.md` for the local player
+  viewer guard.
 
 ## Contributing
 

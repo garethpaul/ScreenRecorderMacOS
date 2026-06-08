@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Removed hardcoded remote playback from `PlayerViewer` and extended static
+  checks to require caller-provided recording URLs.
 - Added `make check` as the shared repository verification alias.
 - Made recording file URL creation use `FileManager` URL APIs instead of
   force-unwrapped path strings.

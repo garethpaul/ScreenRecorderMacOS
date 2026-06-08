@@ -7,25 +7,49 @@
 //
 
 import Foundation
+import AppKit
 import AVKit
 
-class PlayerViewer: View {
-  private let playerLayer = AVPlayerLayer()
-  override init(frame: CGRect) {
-    super.init(frame: frame)
+class PlayerViewer: NSView {
+    private let playerLayer = AVPlayerLayer()
+    private var player: AVPlayer?
 
-    let url = URL(string: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8")!
-    let player = AVPlayer(url: url)
-    player.play()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        configureLayer()
+    }
 
-    playerLayer.player = player
-    layer.addSublayer(playerLayer)
-  }
-  required init?(coder: NSCoder) {
-   fatalError("init(coder:) has not been implemented")
-  }
-  override func layoutSubviews() {
-    super.layoutSubviews()
-    playerLayer.frame = bounds
-  }
+    convenience init(frame: CGRect, url: URL) {
+        self.init(frame: frame)
+        load(url: url)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        configureLayer()
+    }
+
+    func load(url: URL) {
+        let player = AVPlayer(url: url)
+        self.player = player
+        playerLayer.player = player
+    }
+
+    func play() {
+        player?.play()
+    }
+
+    func pause() {
+        player?.pause()
+    }
+
+    override func layout() {
+        super.layout()
+        playerLayer.frame = bounds
+    }
+
+    private func configureLayer() {
+        wantsLayer = true
+        layer = playerLayer
+    }
 }

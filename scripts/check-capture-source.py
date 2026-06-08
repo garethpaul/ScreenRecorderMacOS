@@ -22,6 +22,7 @@ def require_paths():
         "CaptureSample/ScreenRecorder.swift",
         "CaptureSample/ContentView.swift",
         "CaptureSample/Record.swift",
+        "CaptureSample/PlayerViewer.swift",
         "CaptureSample/CaptureSample.entitlements",
     ):
         if not (ROOT / relative_path).exists():
@@ -78,6 +79,7 @@ def behavior_checks():
     screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
     content_view = read_text("CaptureSample/ContentView.swift")
     record = read_text("CaptureSample/Record.swift")
+    player_viewer = read_text("CaptureSample/PlayerViewer.swift")
 
     if "import ScreenCaptureKit" not in capture_engine:
         errors.append("CaptureEngine.swift must import ScreenCaptureKit")
@@ -107,6 +109,12 @@ def behavior_checks():
         errors.append("CaptureEngine must persist recording URLs with absoluteString, not description")
     if "videoEntry.url = url.absoluteString" not in capture_engine:
         errors.append("CaptureEngine must save completed recording URLs as absoluteString")
+    if "bitdash-a.akamaihd.net" in player_viewer or "URL(string: \"http" in player_viewer:
+        errors.append("PlayerViewer must not hardcode remote playback URLs")
+    if "URL(string:" in player_viewer and "!" in player_viewer:
+        errors.append("PlayerViewer must not force unwrap URL(string:) values")
+    if "func load(url: URL)" not in player_viewer:
+        errors.append("PlayerViewer must load caller-provided recording URLs")
 
     return errors
 
