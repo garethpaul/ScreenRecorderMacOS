@@ -18,6 +18,7 @@ Priority:
 - Preserve the ScreenCaptureKit display/window capture flow
 - Keep recording permission checks visible
 - Store recordings and metadata in documented local locations
+- Keep playback tolerant of an empty or invalid recording history
 - Maintain README notes for known recording bugs
 
 Next priorities:

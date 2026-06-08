@@ -25,30 +25,18 @@ class MovieRecorder {
         self.videoTransform = videoTransform
     }
 
-    private func documentDirectory() -> String {
-        let documentDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory,
-                                                                    .userDomainMask,
-                                                                    true)
-        return documentDirectory[0]
-    }
-
-    private func append(toPath path: String,
-                        withPathComponent pathComponent: String) -> String? {
-        if var pathURL = URL(string: path) {
-            pathURL.appendPathComponent(pathComponent)
-
-            return pathURL.absoluteString
-        }
-
-        return nil
+    private func documentDirectory() -> URL? {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
     }
 
     func startRecording(height: Int, width: Int) {
         // Create an asset writer that records to a temporary file
         let outputFileName = NSUUID().uuidString
-        let filePath = self.append(toPath: self.documentDirectory(),
-                                             withPathComponent: outputFileName)
-        let outputFileURL = URL(fileURLWithPath: filePath!).appendingPathExtension("MOV")
+        guard let outputFileURL = documentDirectory()?
+            .appendingPathComponent(outputFileName)
+            .appendingPathExtension("MOV") else {
+            return
+        }
         guard let assetWriter = try? AVAssetWriter(url: outputFileURL, fileType: .mov) else {
             return
         }

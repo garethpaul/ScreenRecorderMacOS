@@ -18,6 +18,8 @@ def require_paths():
         "ScreenRecorder.xcodeproj/xcshareddata/xcschemes/CaptureSample.xcscheme",
         "CaptureSample/CaptureEngine.swift",
         "CaptureSample/ScreenRecorder.swift",
+        "CaptureSample/ContentView.swift",
+        "CaptureSample/Record.swift",
         "CaptureSample/CaptureSample.entitlements",
     ):
         if not (ROOT / relative_path).exists():
@@ -55,6 +57,8 @@ def behavior_checks():
 
     capture_engine = read_text("CaptureSample/CaptureEngine.swift")
     screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
+    content_view = read_text("CaptureSample/ContentView.swift")
+    record = read_text("CaptureSample/Record.swift")
 
     if "import ScreenCaptureKit" not in capture_engine:
         errors.append("CaptureEngine.swift must import ScreenCaptureKit")
@@ -68,6 +72,22 @@ def behavior_checks():
         errors.append("ScreenRecorder display selection should fail before building a content filter")
     if "fatalError(\"No window selected." in screen_recorder:
         errors.append("ScreenRecorder window selection should fail before building a content filter")
+    if "videos[0]" in content_view:
+        errors.append("ContentView must not assume a saved recording exists")
+    if "URL(string: videos" in content_view or "url!)!" in content_view:
+        errors.append("ContentView must not force unwrap saved recording URLs")
+    if "private var latestRecordingURL: URL?" not in content_view:
+        errors.append("ContentView must centralize optional latest-recording URL parsing")
+    if "if let latestRecordingURL = latestRecordingURL" not in content_view:
+        errors.append("ContentView must guard playback on a valid saved recording URL")
+    if "URL(string: path)" in record or "filePath!" in record:
+        errors.append("MovieRecorder must create file URLs without force-unwrapping path strings")
+    if "FileManager.default.urls(for: .documentDirectory" not in record:
+        errors.append("MovieRecorder must resolve the document directory with FileManager URL APIs")
+    if "url.description" in capture_engine:
+        errors.append("CaptureEngine must persist recording URLs with absoluteString, not description")
+    if "videoEntry.url = url.absoluteString" not in capture_engine:
+        errors.append("CaptureEngine must save completed recording URLs as absoluteString")
 
     return errors
 

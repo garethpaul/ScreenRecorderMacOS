@@ -51,6 +51,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make verify` runs static project/source checks. When `xcodebuild` is
   installed, the `build` target also runs the shared Xcode scheme with code
   signing disabled.
+- Static behavior checks cover capture crash paths, recording file URL
+  creation, saved URL persistence, and empty playback history handling.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
 

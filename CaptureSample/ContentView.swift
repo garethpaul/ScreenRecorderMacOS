@@ -22,8 +22,13 @@ struct ContentView: View {
     @FetchRequest(sortDescriptors: [SortDescriptor(\.endTime, order: .reverse)]) var videos: FetchedResults<VideoEntry>
 
     @State var player = AVPlayer()
-    let videoUrl = "https://bitmovin-a.akamaihd.net/content/dataset/multi-codec/hevc/stream_fmp4.m3u8"
 
+    private var latestRecordingURL: URL? {
+        guard let urlString = videos.first?.url else {
+            return nil
+        }
+        return URL(string: urlString)
+    }
 
     var body: some View {
          TabView {
@@ -62,13 +67,22 @@ struct ContentView: View {
                             Label("Preview", systemImage: "tray.and.arrow.down")
                         }
 
-             VideoPlayer(player: player)
-                             .onAppear() {
-                                 player = AVPlayer(url: URL(string: videos[0].url!)!)
-                                 player.play()
-                             }
-
-                 .tabItem{ Label("Last Recording", systemImage: "tray")}
+             Group {
+                 if let latestRecordingURL = latestRecordingURL {
+                     VideoPlayer(player: player)
+                         .onAppear() {
+                             player = AVPlayer(url: latestRecordingURL)
+                             player.play()
+                         }
+                         .onDisappear() {
+                             player.pause()
+                         }
+                 } else {
+                     Text("No recordings yet")
+                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                 }
+             }
+             .tabItem{ Label("Last Recording", systemImage: "tray")}
         }
         .overlay {
             if isUnauthorized {

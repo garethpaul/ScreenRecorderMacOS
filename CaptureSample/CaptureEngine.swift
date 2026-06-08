@@ -79,19 +79,15 @@ class CaptureEngine: NSObject, @unchecked Sendable {
         powerMeter.processSilence()
         self.movie.stopRecording { [self] url in
             // save to CoreData
-            do {
-                let endTime = Date()
+            let endTime = Date()
 
-                let videoEntry = VideoEntry(context: DataController.shared.moc)
-                videoEntry.id = UUID()
-                videoEntry.url = url.description
-                videoEntry.startTime = self.startTime
-                videoEntry.endTime = endTime
-                print(videoEntry)
-                try? DataController.shared.save()
-            } catch {
-                logger.error("Failed to save the new video: \(String(describing: error))")
-            }
+            let videoEntry = VideoEntry(context: DataController.shared.moc)
+            videoEntry.id = UUID()
+            videoEntry.url = url.absoluteString
+            videoEntry.startTime = self.startTime
+            videoEntry.endTime = endTime
+            print(videoEntry)
+            DataController.shared.save()
 
         }
     }
