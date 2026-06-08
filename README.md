@@ -1,5 +1,8 @@
 # ScreenRecorderMacOS
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Overview
 
 `garethpaul/ScreenRecorderMacOS` is an Apple platform application or Objective-C/Swift sample. Screen Recording for MacOS
@@ -76,4 +79,3 @@ Keep changes small and tied to the project that is already present in this repos
 Prior README summary:
 
 > Screen Recorder App for MacOS <!-- README-OVERVIEW-IMAGE --> Modules / Files The body of work happens in ScreenRecorder and CaptureEngine. - ScreenRecorder contains methods for checking `isRunning` - When the app starts it will start recording automatically - Recordings are stored in the ~/Documents directory. Known Bugs
-
