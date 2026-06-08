@@ -109,6 +109,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
 
 /// A class that handles output from an SCStream, and handles stream errors.
 private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
+    private let logger = Logger()
     var movie: MovieRecorder?
 
     var pcmBufferHandler: ((AVAudioPCMBuffer) -> Void)?
@@ -143,7 +144,7 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
             guard let samples = createPCMBuffer(for: sampleBuffer) else { return }
             pcmBufferHandler?(samples)
         @unknown default:
-            fatalError("Encountered unknown stream output type: \(outputType)")
+            logger.error("Ignoring unknown stream output type from ScreenCaptureKit")
         }
     }
 
@@ -168,8 +169,8 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
         let surface = unsafeBitCast(surfaceRef, to: IOSurface.self)
 
         // Retrieve the content rectangle, scale, and scale factor.
-        guard let contentRectDict = attachments[.contentRect],
-              let contentRect = CGRect(dictionaryRepresentation: contentRectDict as! CFDictionary),
+        guard let contentRectDict = attachments[.contentRect] as? CFDictionary,
+              let contentRect = CGRect(dictionaryRepresentation: contentRectDict),
               let contentScale = attachments[.contentScale] as? CGFloat,
               let scaleFactor = attachments[.scaleFactor] as? CGFloat else { return nil }
 

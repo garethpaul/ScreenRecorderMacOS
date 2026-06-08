@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def read_text(relative_path):
+    return (ROOT / relative_path).read_text(encoding="utf-8")
+
+
+def require_paths():
+    missing = []
+    for relative_path in (
+        "ScreenRecorder.xcodeproj/project.pbxproj",
+        "ScreenRecorder.xcodeproj/xcshareddata/xcschemes/CaptureSample.xcscheme",
+        "CaptureSample/CaptureEngine.swift",
+        "CaptureSample/ScreenRecorder.swift",
+        "CaptureSample/CaptureSample.entitlements",
+    ):
+        if not (ROOT / relative_path).exists():
+            missing.append(f"missing required project file: {relative_path}")
+    return missing
+
+
+def project_checks():
+    errors = require_paths()
+    if errors:
+        return errors
+
+    project = read_text("ScreenRecorder.xcodeproj/project.pbxproj")
+    required_project_fragments = (
+        "ScreenCaptureKit.framework",
+        "CODE_SIGN_ENTITLEMENTS = CaptureSample/CaptureSample.entitlements;",
+        "MACOSX_DEPLOYMENT_TARGET = 13;",
+        'PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.CaptureSample${SAMPLE_CODE_DISAMBIGUATOR}";',
+    )
+    for fragment in required_project_fragments:
+        if fragment not in project:
+            errors.append(f"project is missing expected setting: {fragment}")
+
+    entitlements = read_text("CaptureSample/CaptureSample.entitlements")
+    if "<plist version=\"1.0\">" not in entitlements:
+        errors.append("entitlements file is not an XML plist")
+
+    return errors
+
+
+def behavior_checks():
+    errors = require_paths()
+    if errors:
+        return errors
+
+    capture_engine = read_text("CaptureSample/CaptureEngine.swift")
+    screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
+
+    if "import ScreenCaptureKit" not in capture_engine:
+        errors.append("CaptureEngine.swift must import ScreenCaptureKit")
+    if "func startCapture(" not in capture_engine or "func stopCapture()" not in capture_engine:
+        errors.append("CaptureEngine must expose start and stop capture operations")
+    if "fatalError(\"Encountered unknown stream output type:" in capture_engine:
+        errors.append("CaptureEngine must not crash on unknown SCStream output types")
+    if "as! CFDictionary" in capture_engine:
+        errors.append("CaptureEngine must not force-cast frame metadata dictionaries")
+    if "fatalError(\"No display selected." in screen_recorder:
+        errors.append("ScreenRecorder display selection should fail before building a content filter")
+    if "fatalError(\"No window selected." in screen_recorder:
+        errors.append("ScreenRecorder window selection should fail before building a content filter")
+
+    return errors
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=("project", "behavior"), required=True)
+    args = parser.parse_args()
+
+    errors = project_checks() if args.mode == "project" else behavior_checks()
+    if errors:
+        for error in errors:
+            print(error, file=sys.stderr)
+        return 1
+    print(f"{args.mode} checks passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

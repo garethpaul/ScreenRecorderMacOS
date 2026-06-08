@@ -31,6 +31,7 @@ Additional scan context:
 
 - Git
 - macOS with Xcode for building Apple platform projects
+- Python 3 for repository source checks
 
 ### Setup
 
@@ -47,7 +48,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
+- `make verify` runs static project/source checks. When `xcodebuild` is
+  installed, the `build` target also runs the shared Xcode scheme with code
+  signing disabled.
+- Xcode's test action or `xcodebuild test` with the appropriate scheme and
+  destination can be used on macOS for deeper verification.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

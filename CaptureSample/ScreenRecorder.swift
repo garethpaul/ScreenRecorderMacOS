@@ -139,7 +139,10 @@ class ScreenRecorder: ObservableObject {
         
         do {
             let config = streamConfiguration
-            let filter = contentFilter
+            guard let filter = contentFilter else {
+                logger.error("Cannot start capture without a selected source.")
+                return
+            }
             // Update the running state.
             isRunning = true
 
@@ -189,17 +192,19 @@ class ScreenRecorder: ObservableObject {
     /// - Tag: UpdateCaptureConfig
     private func updateEngine() {
         guard isRunning else { return }
+        guard let filter = contentFilter else { return }
+        let configuration = streamConfiguration
         Task {
-            await captureEngine.update(configuration: streamConfiguration, filter: contentFilter)
+            await captureEngine.update(configuration: configuration, filter: filter)
         }
     }
     
     /// - Tag: UpdateFilter
-    private var contentFilter: SCContentFilter {
+    private var contentFilter: SCContentFilter? {
         let filter: SCContentFilter
         switch captureType {
         case .display:
-            guard let display = selectedDisplay else { fatalError("No display selected.") }
+            guard let display = selectedDisplay else { return nil }
             var excludedApps = [SCRunningApplication]()
             // If a user chooses to exclude the app from the stream,
             // exclude it by matching its bundle identifier.
@@ -213,7 +218,7 @@ class ScreenRecorder: ObservableObject {
                                      excludingApplications: excludedApps,
                                      exceptingWindows: [])
         case .window:
-            guard let window = selectedWindow else { fatalError("No window selected.") }
+            guard let window = selectedWindow else { return nil }
             
             // Create a content filter that includes a single window.
             filter = SCContentFilter(desktopIndependentWindow: window)
