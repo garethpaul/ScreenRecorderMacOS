@@ -78,4 +78,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> Screen Recorder App for MacOS <!-- README-OVERVIEW-IMAGE --> Modules / Files The body of work happens in ScreenRecorder and CaptureEngine. - ScreenRecorder contains methods for checking `isRunning` - When the app starts it will start recording automatically - Recordings are stored in the ~/Documents directory. Known Bugs
+> Screen Recorder App for MacOS Modules / Files The body of work happens in ScreenRecorder and CaptureEngine. - ScreenRecorder contains methods for checking `isRunning` - When the app starts it will start recording automatically - Recordings are stored in the ~/Documents directory. Known Bugs
