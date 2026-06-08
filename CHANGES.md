@@ -2,6 +2,7 @@
 
 ## 2026-06-08
 
+- Added `make check` as the shared repository verification alias.
 - Made recording file URL creation use `FileManager` URL APIs instead of
   force-unwrapped path strings.
 - Saved completed recording URLs with `absoluteString` and made the last
