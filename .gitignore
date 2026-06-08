@@ -5,6 +5,10 @@
 # Finder
 .DS_Store
 
+# Python checker artifacts
+*.pyc
+__pycache__/
+
 # Xcode - User files
 xcuserdata/
 

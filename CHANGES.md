@@ -2,6 +2,10 @@
 
 ## 2026-06-08
 
+- Removed saved recording metadata debug logging and added static validation to
+  keep recording file URLs out of logs.
+- Ignored Python bytecode artifacts produced while validating the static
+  source checker.
 - Removed hardcoded remote playback from `PlayerViewer` and extended static
   checks to require caller-provided recording URLs.
 - Added `make check` as the shared repository verification alias.

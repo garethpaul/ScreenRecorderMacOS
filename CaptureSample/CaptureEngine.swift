@@ -86,7 +86,6 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             videoEntry.url = url.absoluteString
             videoEntry.startTime = self.startTime
             videoEntry.endTime = endTime
-            print(videoEntry)
             DataController.shared.save()
 
         }

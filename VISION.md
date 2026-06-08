@@ -20,6 +20,7 @@ Priority:
 - Store recordings and metadata in documented local locations
 - Keep playback tolerant of an empty or invalid recording history
 - Avoid hardcoded remote media playback in recording helpers
+- Avoid logging saved recording file URLs or metadata
 - Keep completed maintenance plans under `docs/plans`
 - Maintain README notes for known recording bugs
 

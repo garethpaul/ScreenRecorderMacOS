@@ -109,6 +109,8 @@ def behavior_checks():
         errors.append("CaptureEngine must persist recording URLs with absoluteString, not description")
     if "videoEntry.url = url.absoluteString" not in capture_engine:
         errors.append("CaptureEngine must save completed recording URLs as absoluteString")
+    if "print(videoEntry)" in capture_engine:
+        errors.append("CaptureEngine must not print saved recording metadata or file URLs")
     if "bitdash-a.akamaihd.net" in player_viewer or "URL(string: \"http" in player_viewer:
         errors.append("PlayerViewer must not hardcode remote playback URLs")
     if "URL(string:" in player_viewer and "!" in player_viewer:
