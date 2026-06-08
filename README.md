@@ -1,5 +1,8 @@
 # Screen Recorder App for MacOS
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Modules / Files
 
 The body of work happens in ScreenRecorder and CaptureEngine.
@@ -16,4 +19,3 @@ The body of work happens in ScreenRecorder and CaptureEngine.
 ## Nice to Haves
 
 [] A split view on the left would be useful for config and viewing the files recorded.
-
