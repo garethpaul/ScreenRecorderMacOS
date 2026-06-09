@@ -71,6 +71,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   checked-in `Video` model and log store-load failures without crashing.
 - Static behavior checks also require the menu bar and menu view to use the
   recorder's centralized timer string, with the visible timer reset after stop.
+- Static behavior checks also require recording start failures to stop audio
+  metering and reset the visible timer.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -111,6 +113,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   model and non-crashing persistent-store load guard.
 - See `docs/plans/2026-06-09-recording-timer-reset.md` for the centralized
   recording timer reset guard.
+- See `docs/plans/2026-06-09-recording-start-failure-cleanup.md` for the
+  recording start-failure cleanup guard.
 
 ## Contributing
 

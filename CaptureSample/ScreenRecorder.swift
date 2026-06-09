@@ -142,6 +142,8 @@ class ScreenRecorder: ObservableObject {
             let config = streamConfiguration
             guard let filter = contentFilter else {
                 logger.error("Cannot start capture without a selected source.")
+                stopAudioMetering()
+                resetTimer()
                 return
             }
             // Update the running state.
@@ -164,6 +166,8 @@ class ScreenRecorder: ObservableObject {
             }
         } catch {
             logger.error("\(error.localizedDescription)")
+            stopAudioMetering()
+            resetTimer()
             // Unable to start the stream. Set the running state to false.
             isRunning = false
         }

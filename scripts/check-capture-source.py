@@ -150,6 +150,10 @@ def behavior_checks():
         errors.append("ScreenRecorder timer refresh must derive elapsed time from startTime")
     if "resetTimer()\n        recordTimer = Timer.publish" not in screen_recorder:
         errors.append("ScreenRecorder.start must reset the visible timer before restarting the publisher")
+    if 'logger.error("Cannot start capture without a selected source.")\n                stopAudioMetering()\n                resetTimer()\n                return' not in screen_recorder:
+        errors.append("ScreenRecorder.start must stop audio metering and reset the timer when no capture source is selected")
+    if 'logger.error("\\(error.localizedDescription)")\n            stopAudioMetering()\n            resetTimer()\n            // Unable to start the stream. Set the running state to false.' not in screen_recorder:
+        errors.append("ScreenRecorder.start must stop audio metering and reset the timer when capture startup throws")
     if "isRunning = false\n        startTime = Date()\n        resetTimer()" not in screen_recorder:
         errors.append("ScreenRecorder.stop must reset the visible timer after recording completes")
     if '@AppStorage("timerString")' in capture_app:

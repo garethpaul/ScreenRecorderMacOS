@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Stopped audio metering and reset the visible timer when recording start exits
+  before capture begins, with static behavior checks for both failure paths.
 - Centralized the menu bar recording timer on `ScreenRecorder` and reset it
   after recording stops, with static validation for stale local timer state.
 - Pointed the preview persistence controller at the checked-in `Video` Core
