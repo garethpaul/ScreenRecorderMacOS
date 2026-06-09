@@ -46,6 +46,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
     /// - Tag: StartCapture
     func startCapture(configuration: SCStreamConfiguration, filter: SCContentFilter, movie: MovieRecorder) -> AsyncThrowingStream<CapturedFrame, Error> {
         AsyncThrowingStream<CapturedFrame, Error> { continuation in
+            self.continuation = continuation
             // The stream output object.
             let streamOutput = CaptureEngineStreamOutput(continuation: continuation)
             streamOutput.movie = movie
@@ -65,11 +66,13 @@ class CaptureEngine: NSObject, @unchecked Sendable {
                 stream?.startCapture()
             } catch {
                 continuation.finish(throwing: error)
+                self.continuation = nil
             }
         }
     }
 
     func stopCapture() async {
+        defer { self.continuation = nil }
         do {
             try await stream?.stopCapture()
             continuation?.finish()

@@ -21,6 +21,7 @@ Priority:
 - Keep playback tolerant of an empty or invalid recording history
 - Avoid hardcoded remote media playback in recording helpers
 - Avoid logging saved recording file URLs or metadata
+- Keep capture stream continuations tied to explicit start/stop lifecycle
 - Avoid ad hoc stdout debug logging from app Swift sources
 - Keep completed maintenance plans under `docs/plans`
 - Maintain README notes for known recording bugs

@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Stored and cleared the active capture stream continuation so `stopCapture()`
+  can finish the engine-level stream lifecycle reliably.
 - Removed ad hoc Swift `print(...)` debug logging from menu state transitions
   and Core Data save paths.
 - Routed Core Data persistence failures through structured `OSLog` logging and

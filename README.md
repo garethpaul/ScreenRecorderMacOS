@@ -63,6 +63,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   or file URLs.
 - Static behavior checks reject ad hoc `print(...)` logging in app Swift
   sources; use structured logging for failures that need diagnostics.
+- Static behavior checks also require `CaptureEngine` to store and clear the
+  active capture continuation during start/stop lifecycle handling.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -95,6 +97,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   metadata logging guard.
 - See `docs/plans/2026-06-09-structured-app-logging.md` for the ad hoc stdout
   logging guard.
+- See `docs/plans/2026-06-09-capture-continuation-lifecycle.md` for the capture
+  continuation lifecycle guard.
 
 ## Contributing
 
