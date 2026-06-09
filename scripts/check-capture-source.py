@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOCS_PLANS = ROOT / "docs" / "plans"
 CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-screen-recorder-macos-baseline.md"
+TIMER_RESET_PLAN = DOCS_PLANS / "2026-06-09-recording-timer-reset.md"
 
 
 def read_text(relative_path):
@@ -20,10 +21,12 @@ def require_paths():
         "ScreenRecorder.xcodeproj/xcshareddata/xcschemes/CaptureSample.xcscheme",
         "CaptureSample/CaptureEngine.swift",
         "CaptureSample/ScreenRecorder.swift",
+        "CaptureSample/CaptureSampleApp.swift",
         "CaptureSample/ContentView.swift",
         "CaptureSample/Record.swift",
         "CaptureSample/PlayerViewer.swift",
         "CaptureSample/PersistenceController.swift",
+        "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
     ):
         if not (ROOT / relative_path).exists():
@@ -35,6 +38,8 @@ def docs_plan_checks():
     errors = []
     if not CANONICAL_PLAN.exists():
         errors.append("docs/plans/2026-06-08-screen-recorder-macos-baseline.md is missing")
+    if not TIMER_RESET_PLAN.exists():
+        errors.append("docs/plans/2026-06-09-recording-timer-reset.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -78,10 +83,12 @@ def behavior_checks():
 
     capture_engine = read_text("CaptureSample/CaptureEngine.swift")
     screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
+    capture_app = read_text("CaptureSample/CaptureSampleApp.swift")
     content_view = read_text("CaptureSample/ContentView.swift")
     record = read_text("CaptureSample/Record.swift")
     player_viewer = read_text("CaptureSample/PlayerViewer.swift")
     persistence_controller = read_text("CaptureSample/PersistenceController.swift")
+    menu_view = read_text("CaptureSample/Views/MenuView.swift")
 
     if "import ScreenCaptureKit" not in capture_engine:
         errors.append("CaptureEngine.swift must import ScreenCaptureKit")
@@ -135,6 +142,32 @@ def behavior_checks():
         errors.append("PersistenceController must use structured logging for persistence failures")
     if 'logger.error("Core Data failed to load:' not in persistence_controller:
         errors.append("PersistenceController must log persistent store load failures")
+    if "func refreshTimer(now: Date = Date())" not in screen_recorder:
+        errors.append("ScreenRecorder must centralize recording timer refreshes")
+    if "private func resetTimer()" not in screen_recorder:
+        errors.append("ScreenRecorder must centralize recording timer reset behavior")
+    if "timerString = now.passedTime(from: startTime)" not in screen_recorder:
+        errors.append("ScreenRecorder timer refresh must derive elapsed time from startTime")
+    if "resetTimer()\n        recordTimer = Timer.publish" not in screen_recorder:
+        errors.append("ScreenRecorder.start must reset the visible timer before restarting the publisher")
+    if "isRunning = false\n        startTime = Date()\n        resetTimer()" not in screen_recorder:
+        errors.append("ScreenRecorder.stop must reset the visible timer after recording completes")
+    if '@AppStorage("timerString")' in capture_app:
+        errors.append("CaptureSampleApp must not keep a separate menu bar timer string")
+    if "Text(screenRecorder.timerString)" not in capture_app:
+        errors.append("CaptureSampleApp menu bar must display ScreenRecorder.timerString")
+    if "screenRecorder.refreshTimer()" not in capture_app:
+        errors.append("CaptureSampleApp menu bar must refresh the centralized timer")
+    if "@State private var timerString" in menu_view or "Text(self.timerString)" in menu_view:
+        errors.append("MenuView must not keep a stale local timer string")
+    if "@Binding var userStopped: Bool" not in menu_view:
+        errors.append("MenuView must bind userStopped so menu actions update shared recording state")
+    if "if (!userStopped)" in menu_view or "if (userStopped)" in menu_view:
+        errors.append("MenuView recording toggle must use one stop/start branch")
+    if "Text(screenRecorder.timerString)" not in menu_view:
+        errors.append("MenuView must display ScreenRecorder.timerString")
+    if "screenRecorder.refreshTimer()" not in menu_view:
+        errors.append("MenuView must refresh the centralized timer")
 
     for swift_path in sorted((ROOT / "CaptureSample").rglob("*.swift")):
         for line_number, line in enumerate(swift_path.read_text(encoding="utf-8").splitlines(), 1):

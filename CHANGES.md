@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Centralized the menu bar recording timer on `ScreenRecorder` and reset it
+  after recording stops, with static validation for stale local timer state.
 - Pointed the preview persistence controller at the checked-in `Video` Core
   Data model and replaced persistent-store load crashes with structured logs.
 - Cleared retained `SCStream` references on capture stop and start failure, with

@@ -14,8 +14,6 @@ struct CaptureSampleApp: App {
     @AppStorage("currentFocus") var currentFocus: String = ""
     @State var switcher: Bool = false
 
-    @AppStorage("timerString") var timerString = "00:00"
-
     var body: some Scene {
         WindowGroup {
             ContentView(userStopped: userStopped, screenRecorder: screenRecorder)
@@ -25,14 +23,12 @@ struct CaptureSampleApp: App {
         }.windowStyle(HiddenTitleBarWindowStyle())
 
         MenuBarExtra{
-            MenuView(screenRecorder: screenRecorder, currentFocus: currentFocus, userStopped: userStopped)
+            MenuView(screenRecorder: screenRecorder, currentFocus: currentFocus, userStopped: $userStopped)
         }label: {
-            Text(self.timerString)
+            Text(screenRecorder.timerString)
                         .font(Font.system(.largeTitle, design: .monospaced))
                         .onReceive(screenRecorder.recordTimer) { _ in
-                            if screenRecorder.isRunning {
-                                timerString = Date().passedTime(from: screenRecorder.startTime)
-                            }
+                            screenRecorder.refreshTimer()
                         }
         }
         .menuBarExtraStyle(.window)

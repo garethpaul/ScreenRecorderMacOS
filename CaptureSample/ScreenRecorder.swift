@@ -124,6 +124,7 @@ class ScreenRecorder: ObservableObject {
         // Exit early if already running.
         guard !isRunning else { return }
         startTime = Date()
+        resetTimer()
         recordTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
         if !isSetup {
@@ -175,6 +176,20 @@ class ScreenRecorder: ObservableObject {
         stopAudioMetering()
         isRunning = false
         startTime = Date()
+        resetTimer()
+    }
+
+    func refreshTimer(now: Date = Date()) {
+        guard isRunning else {
+            resetTimer()
+            return
+        }
+
+        timerString = now.passedTime(from: startTime)
+    }
+
+    private func resetTimer() {
+        timerString = "00:00"
     }
     
     private func startAudioMetering() {

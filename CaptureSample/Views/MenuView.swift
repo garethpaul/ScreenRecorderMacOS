@@ -12,8 +12,7 @@ import SwiftUI
 struct MenuView: View {
     @ObservedObject var screenRecorder: ScreenRecorder
     @State var currentFocus: String
-    @State var userStopped: Bool
-    @State private var timerString = "00:00"
+    @Binding var userStopped: Bool
 
     var body: some View {
         ScrollView{
@@ -24,17 +23,16 @@ struct MenuView: View {
                 HStack{
                     Spacer()
                     Button{
-                        if (!userStopped) {
-                            Task {
-                                await screenRecorder.stop()
-                            }
-                            self.userStopped = true
-                        }
-                        if (userStopped) {
+                        if userStopped {
                             Task {
                                 await screenRecorder.start()
                             }
                             self.userStopped = false
+                        } else {
+                            Task {
+                                await screenRecorder.stop()
+                            }
+                            self.userStopped = true
                         }
                     } label: {
                         VStack(alignment: .center){
@@ -46,11 +44,9 @@ struct MenuView: View {
                                       .background(screenRecorder.isRunning == true ? Color.gray : Color.red)
                                       .clipShape(Circle())
                             Text(screenRecorder.isRunning == true ? "Stop": "Record")
-                            Text(self.timerString)
+                            Text(screenRecorder.timerString)
                                         .onReceive(screenRecorder.recordTimer) { _ in
-                                            if screenRecorder.isRunning {
-                                                timerString = Date().passedTime(from: screenRecorder.startTime)
-                                            }
+                                            screenRecorder.refreshTimer()
                                         }
                         }.padding()
 

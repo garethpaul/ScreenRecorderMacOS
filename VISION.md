@@ -23,6 +23,7 @@ Priority:
 - Avoid logging saved recording file URLs or metadata
 - Keep capture stream continuations tied to explicit start/stop lifecycle
 - Release retained capture streams when stop or start failure completes
+- Keep the menu bar recording timer reset after recording stops
 - Avoid ad hoc stdout debug logging from app Swift sources
 - Keep local persistence failures observable without crashing previews
 - Keep completed maintenance plans under `docs/plans`
@@ -31,7 +32,6 @@ Priority:
 Next priorities:
 
 - Add setup notes for macOS and Xcode requirements
-- Fix timer reset behavior after recording completes
 - Handle sleep, display disconnect, and writer failure cases gracefully
 - Add a configuration/viewing pane without hiding recording state
 

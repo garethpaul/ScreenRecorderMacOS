@@ -69,6 +69,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   stream references on stop and start failure.
 - Static behavior checks also require the persistence helper to use the
   checked-in `Video` model and log store-load failures without crashing.
+- Static behavior checks also require the menu bar and menu view to use the
+  recorder's centralized timer string, with the visible timer reset after stop.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -107,6 +109,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   release guard.
 - See `docs/plans/2026-06-09-persistence-load-failure.md` for the Core Data
   model and non-crashing persistent-store load guard.
+- See `docs/plans/2026-06-09-recording-timer-reset.md` for the centralized
+  recording timer reset guard.
 
 ## Contributing
 
