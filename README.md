@@ -73,6 +73,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   recorder's centralized timer string, with the visible timer reset after stop.
 - Static behavior checks also require recording start failures to stop audio
   metering and reset the visible timer.
+- Static project checks require the Xcode project to leave `DEVELOPMENT_TEAM`
+  empty so local signing identity choices stay out of git.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -115,6 +117,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   recording timer reset guard.
 - See `docs/plans/2026-06-09-recording-start-failure-cleanup.md` for the
   recording start-failure cleanup guard.
+- See `docs/plans/2026-06-09-local-signing-team-guard.md` for the local Xcode
+  signing team guard.
 
 ## Contributing
 

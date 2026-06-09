@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Cleared the checked-in Xcode development team and added a static project
+  guard so local signing identities are not recommitted.
 - Stopped audio metering and reset the visible timer when recording start exits
   before capture begins, with static behavior checks for both failure paths.
 - Centralized the menu bar recording timer on `ScreenRecorder` and reset it

@@ -69,6 +69,12 @@ def project_checks():
         if fragment not in project:
             errors.append(f"project is missing expected setting: {fragment}")
 
+    if 'DEVELOPMENT_TEAM = "";' not in project:
+        errors.append("project must leave DEVELOPMENT_TEAM empty for local sample signing")
+    for line_number, line in enumerate(project.splitlines(), 1):
+        if "DEVELOPMENT_TEAM =" in line and 'DEVELOPMENT_TEAM = "";' not in line:
+            errors.append(f"project.pbxproj:{line_number} must not commit a concrete DEVELOPMENT_TEAM")
+
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
         errors.append("entitlements file is not an XML plist")

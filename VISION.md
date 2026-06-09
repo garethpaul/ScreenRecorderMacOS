@@ -25,6 +25,7 @@ Priority:
 - Release retained capture streams when stop or start failure completes
 - Keep the menu bar recording timer reset after recording stops
 - Clean up audio metering and timer state when recording start fails
+- Keep local Xcode signing team choices out of checked-in project metadata
 - Avoid ad hoc stdout debug logging from app Swift sources
 - Keep local persistence failures observable without crashing previews
 - Keep completed maintenance plans under `docs/plans`
