@@ -65,6 +65,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   sources; use structured logging for failures that need diagnostics.
 - Static behavior checks also require `CaptureEngine` to store and clear the
   active capture continuation during start/stop lifecycle handling.
+- Static behavior checks also require `CaptureEngine` to release retained
+  stream references on stop and start failure.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -99,6 +101,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   logging guard.
 - See `docs/plans/2026-06-09-capture-continuation-lifecycle.md` for the capture
   continuation lifecycle guard.
+- See `docs/plans/2026-06-09-capture-stream-release.md` for the capture stream
+  release guard.
 
 ## Contributing
 

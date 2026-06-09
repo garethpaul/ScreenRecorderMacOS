@@ -87,8 +87,10 @@ def behavior_checks():
         errors.append("CaptureEngine must expose start and stop capture operations")
     if "AsyncThrowingStream<CapturedFrame, Error> { continuation in\n            self.continuation = continuation" not in capture_engine:
         errors.append("CaptureEngine.startCapture must store its stream continuation for stopCapture")
-    if "defer { self.continuation = nil }" not in capture_engine:
-        errors.append("CaptureEngine.stopCapture must clear its stored stream continuation")
+    if "defer {\n            self.continuation = nil\n            self.stream = nil\n        }" not in capture_engine:
+        errors.append("CaptureEngine.stopCapture must clear its stored stream continuation and stream reference")
+    if capture_engine.count("self.stream = nil") < 2:
+        errors.append("CaptureEngine must clear retained stream references on stop and start failure")
     if "fatalError(\"Encountered unknown stream output type:" in capture_engine:
         errors.append("CaptureEngine must not crash on unknown SCStream output types")
     if "as! CFDictionary" in capture_engine:

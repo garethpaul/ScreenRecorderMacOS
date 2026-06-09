@@ -67,12 +67,16 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             } catch {
                 continuation.finish(throwing: error)
                 self.continuation = nil
+                self.stream = nil
             }
         }
     }
 
     func stopCapture() async {
-        defer { self.continuation = nil }
+        defer {
+            self.continuation = nil
+            self.stream = nil
+        }
         do {
             try await stream?.stopCapture()
             continuation?.finish()

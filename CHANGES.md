@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Cleared retained `SCStream` references on capture stop and start failure, with
+  static behavior validation for the release path.
 - Stored and cleared the active capture stream continuation so `stopCapture()`
   can finish the engine-level stream lifecycle reliably.
 - Removed ad hoc Swift `print(...)` debug logging from menu state transitions
