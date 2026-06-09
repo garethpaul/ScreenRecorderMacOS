@@ -24,6 +24,7 @@ Priority:
 - Keep capture stream continuations tied to explicit start/stop lifecycle
 - Release retained capture streams when stop or start failure completes
 - Avoid ad hoc stdout debug logging from app Swift sources
+- Keep local persistence failures observable without crashing previews
 - Keep completed maintenance plans under `docs/plans`
 - Maintain README notes for known recording bugs
 

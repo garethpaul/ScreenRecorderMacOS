@@ -67,6 +67,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   active capture continuation during start/stop lifecycle handling.
 - Static behavior checks also require `CaptureEngine` to release retained
   stream references on stop and start failure.
+- Static behavior checks also require the persistence helper to use the
+  checked-in `Video` model and log store-load failures without crashing.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -103,6 +105,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   continuation lifecycle guard.
 - See `docs/plans/2026-06-09-capture-stream-release.md` for the capture stream
   release guard.
+- See `docs/plans/2026-06-09-persistence-load-failure.md` for the Core Data
+  model and non-crashing persistent-store load guard.
 
 ## Contributing
 

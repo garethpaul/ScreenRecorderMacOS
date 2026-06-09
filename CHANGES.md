@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Pointed the preview persistence controller at the checked-in `Video` Core
+  Data model and replaced persistent-store load crashes with structured logs.
 - Cleared retained `SCStream` references on capture stop and start failure, with
   static behavior validation for the release path.
 - Stored and cleared the active capture stream continuation so `stopCapture()`

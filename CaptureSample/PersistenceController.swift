@@ -8,10 +8,12 @@
 
 import Foundation
 import CoreData
+import OSLog
 
 struct PersistenceController {
     // A singleton for our entire app to use
     static let shared = PersistenceController()
+    private let logger = Logger()
 
     // Storage for Core Data
     let container: NSPersistentContainer
@@ -26,17 +28,16 @@ struct PersistenceController {
     // An initializer to load Core Data, optionally able
     // to use an in-memory store.
     init(inMemory: Bool = false) {
-        // If you didn't name your model Main you'll need
-        // to change this name below.
-        container = NSPersistentContainer(name: "CaptureSample")
+        container = NSPersistentContainer(name: "Video")
 
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }
 
+        let logger = self.logger
         container.loadPersistentStores { description, error in
             if let error = error {
-                fatalError("Error: \(error.localizedDescription)")
+                logger.error("Core Data failed to load: \(error.localizedDescription)")
             }
         }
     }

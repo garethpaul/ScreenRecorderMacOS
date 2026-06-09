@@ -23,6 +23,7 @@ def require_paths():
         "CaptureSample/ContentView.swift",
         "CaptureSample/Record.swift",
         "CaptureSample/PlayerViewer.swift",
+        "CaptureSample/PersistenceController.swift",
         "CaptureSample/CaptureSample.entitlements",
     ):
         if not (ROOT / relative_path).exists():
@@ -80,6 +81,7 @@ def behavior_checks():
     content_view = read_text("CaptureSample/ContentView.swift")
     record = read_text("CaptureSample/Record.swift")
     player_viewer = read_text("CaptureSample/PlayerViewer.swift")
+    persistence_controller = read_text("CaptureSample/PersistenceController.swift")
 
     if "import ScreenCaptureKit" not in capture_engine:
         errors.append("CaptureEngine.swift must import ScreenCaptureKit")
@@ -123,6 +125,16 @@ def behavior_checks():
         errors.append("PlayerViewer must not force unwrap URL(string:) values")
     if "func load(url: URL)" not in player_viewer:
         errors.append("PlayerViewer must load caller-provided recording URLs")
+    if 'NSPersistentContainer(name: "CaptureSample")' in persistence_controller:
+        errors.append("PersistenceController must use the checked-in Video Core Data model")
+    if "fatalError(" in persistence_controller:
+        errors.append("PersistenceController must not crash on persistent store load failures")
+    if 'NSPersistentContainer(name: "Video")' not in persistence_controller:
+        errors.append("PersistenceController must initialize the Video Core Data model")
+    if "import OSLog" not in persistence_controller or "private let logger = Logger()" not in persistence_controller:
+        errors.append("PersistenceController must use structured logging for persistence failures")
+    if 'logger.error("Core Data failed to load:' not in persistence_controller:
+        errors.append("PersistenceController must log persistent store load failures")
 
     for swift_path in sorted((ROOT / "CaptureSample").rglob("*.swift")):
         for line_number, line in enumerate(swift_path.read_text(encoding="utf-8").splitlines(), 1):
