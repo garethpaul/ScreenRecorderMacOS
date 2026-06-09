@@ -118,6 +118,14 @@ def behavior_checks():
     if "func load(url: URL)" not in player_viewer:
         errors.append("PlayerViewer must load caller-provided recording URLs")
 
+    for swift_path in sorted((ROOT / "CaptureSample").rglob("*.swift")):
+        for line_number, line in enumerate(swift_path.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("//") or stripped.startswith("/*") or stripped.startswith("*"):
+                continue
+            if "print(" in stripped:
+                errors.append(f"{swift_path.relative_to(ROOT)}:{line_number} must not use print(...) for app logging")
+
     return errors
 
 

@@ -61,6 +61,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   prevention of hardcoded remote player URLs.
 - Static behavior checks also reject debug logging of saved recording metadata
   or file URLs.
+- Static behavior checks reject ad hoc `print(...)` logging in app Swift
+  sources; use structured logging for failures that need diagnostics.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -91,6 +93,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   viewer guard.
 - See `docs/plans/2026-06-08-recording-log-privacy.md` for the saved recording
   metadata logging guard.
+- See `docs/plans/2026-06-09-structured-app-logging.md` for the ad hoc stdout
+  logging guard.
 
 ## Contributing
 

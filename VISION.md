@@ -21,6 +21,7 @@ Priority:
 - Keep playback tolerant of an empty or invalid recording history
 - Avoid hardcoded remote media playback in recording helpers
 - Avoid logging saved recording file URLs or metadata
+- Avoid ad hoc stdout debug logging from app Swift sources
 - Keep completed maintenance plans under `docs/plans`
 - Maintain README notes for known recording bugs
 
@@ -53,6 +54,7 @@ capture, upload, or telemetry behavior.
 - Hidden or automatic background recording
 - Network upload of recordings
 - Permission-bypass behavior
+- Ad hoc stdout logging for app state or persistence events
 - Storage changes without user-visible documentation
 
 This list is a roadmap guardrail, not a permanent rule.

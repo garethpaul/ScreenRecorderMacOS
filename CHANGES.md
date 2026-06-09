@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-09
+
+- Removed ad hoc Swift `print(...)` debug logging from menu state transitions
+  and Core Data save paths.
+- Routed Core Data persistence failures through structured `OSLog` logging and
+  extended static checks to reject active `print(...)` app logging.
+
 ## 2026-06-08
 
 - Removed saved recording metadata debug logging and added static validation to

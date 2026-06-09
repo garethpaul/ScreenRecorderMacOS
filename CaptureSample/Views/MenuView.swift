@@ -25,14 +25,12 @@ struct MenuView: View {
                     Spacer()
                     Button{
                         if (!userStopped) {
-                            print("stopped")
                             Task {
                                 await screenRecorder.stop()
                             }
                             self.userStopped = true
                         }
                         if (userStopped) {
-                            print("start")
                             Task {
                                 await screenRecorder.start()
                             }
@@ -61,10 +59,7 @@ struct MenuView: View {
                     Spacer()
                 }
 
-            }.onChange(of: screenRecorder.isRunning, perform: { newValue in
-                print("changed")
-
-            }).padding()
+            }.padding()
         }
     }
 }

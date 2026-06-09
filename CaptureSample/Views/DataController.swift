@@ -8,16 +8,18 @@
 
 import CoreData
 import Foundation
+import OSLog
 
 class DataController:  ObservableObject  {
     let container = NSPersistentContainer(name: "Video")
+    private let logger = Logger()
 
     static var shared = DataController()
 
     init() {
         container.loadPersistentStores { description, error in
             if let error = error {
-                print("Core Data failed to load \(error.localizedDescription)")
+                self.logger.error("Core Data failed to load: \(error.localizedDescription)")
             }
         }
     }
@@ -30,10 +32,9 @@ class DataController:  ObservableObject  {
         func save() {
             if moc.hasChanges {
                 do {
-                    print("Sucess!!")
                     try moc.save()
                 } catch {
-                    print("Error while saving managedObjectContext \(error)")
+                    logger.error("Error while saving managedObjectContext: \(String(describing: error))")
                 }
             }
         }
