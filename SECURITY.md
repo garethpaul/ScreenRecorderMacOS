@@ -35,6 +35,8 @@ Helpful reports include:
 - GitHub Actions runs the static `make check` baseline before review.
 - CI actions stay pinned by commit and run with read-only repository contents
   permission.
+- Hosted Xcode compilation disables code signing and does not receive a
+  development team, certificate, capture permission, or recording data.
 
 ## Mobile Privacy Notes
 

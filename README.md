@@ -59,6 +59,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - GitHub Actions runs `make check` through `.github/workflows/check.yml` on
   pushes, pull requests, and manual dispatches with pinned Node 24-compatible
   actions, read-only permissions, and a timeout.
+- A second hosted job performs an unsigned app build on the fixed `macos-15`
+  runner, so current Xcode compilation is enforced rather than inferred.
 - Static behavior checks cover capture crash paths, recording file URL
   creation, saved URL persistence, empty playback history handling, and
   prevention of hardcoded remote player URLs.
@@ -123,6 +125,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-09-local-signing-team-guard.md` for the local Xcode
   signing team guard.
 - See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions baseline.
+- See `docs/plans/2026-06-10-hosted-macos-build.md` for the unsigned hosted
+  Xcode build boundary.
 
 ## Contributing
 

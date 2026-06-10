@@ -30,6 +30,7 @@ Priority:
 - Keep local persistence failures observable without crashing previews
 - Keep completed maintenance plans under `docs/plans`
 - Keep GitHub Actions running the static `make check` baseline before review
+- Keep the unsigned app compiling on a fixed hosted macOS runner
 - Maintain README notes for known recording bugs
 
 Next priorities:

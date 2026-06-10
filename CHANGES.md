@@ -6,6 +6,8 @@
   static `make check` baseline with pinned Node 24-compatible actions.
 - Added a static project guard requiring the CI workflow and completed CI
   baseline plan to remain checked in.
+- Added a real unsigned macOS app build on the fixed `macos-15` hosted runner.
+- Made Makefile checks and Xcode execution independent of the caller's directory.
 
 ## 2026-06-09
 

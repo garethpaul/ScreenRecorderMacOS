@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -9,7 +10,9 @@ DOCS_PLANS = ROOT / "docs" / "plans"
 CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-screen-recorder-macos-baseline.md"
 TIMER_RESET_PLAN = DOCS_PLANS / "2026-06-09-recording-timer-reset.md"
 CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
+HOSTED_BUILD_PLAN = DOCS_PLANS / "2026-06-10-hosted-macos-build.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
+MAKEFILE = ROOT / "Makefile"
 
 
 def read_text(relative_path):
@@ -44,6 +47,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-09-recording-timer-reset.md is missing")
     if not CI_PLAN.exists():
         errors.append("docs/plans/2026-06-10-ci-baseline.md is missing")
+    if not HOSTED_BUILD_PLAN.exists():
+        errors.append("docs/plans/2026-06-10-hosted-macos-build.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -87,13 +92,34 @@ def project_checks():
             "uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" not in workflow
             or "uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" not in workflow
             or 'python-version: "3.12"' not in workflow
+            or "runs-on: ubuntu-24.04" not in workflow
+            or "runs-on: macos-15" not in workflow
+            or "concurrency:" not in workflow
+            or "cancel-in-progress: true" not in workflow
             or "permissions:" not in workflow
             or "contents: read" not in workflow
             or "timeout-minutes: 5" not in workflow
+            or "timeout-minutes: 15" not in workflow
             or "workflow_dispatch:" not in workflow
             or "run: make check" not in workflow
+            or "run: make build" not in workflow
         ):
-            errors.append(".github/workflows/check.yml must keep the pinned, least-privilege Python check baseline")
+            errors.append(".github/workflows/check.yml must keep the pinned structural and macOS build baselines")
+        for action, revision in re.findall(
+            r"^\s*uses:\s*([^@\s]+)@([^\s#]+)", workflow, flags=re.MULTILINE
+        ):
+            if not re.fullmatch(r"[a-f0-9]{40}", revision):
+                errors.append(f"GitHub Actions action {action} must be pinned to a full commit SHA")
+
+    makefile = MAKEFILE.read_text(encoding="utf-8") if MAKEFILE.exists() else ""
+    for fragment in (
+        "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        '$(PYTHON) "$(ROOT)/scripts/check-capture-source.py" --mode project',
+        'cd "$(ROOT)" && "$(XCODEBUILD)" -project ScreenRecorder.xcodeproj',
+        "CODE_SIGNING_ALLOWED=NO build",
+    ):
+        if fragment not in makefile:
+            errors.append(f"Makefile must keep contract: {fragment}")
 
     for docs_file in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
         if "GitHub Actions" not in read_text(docs_file):
