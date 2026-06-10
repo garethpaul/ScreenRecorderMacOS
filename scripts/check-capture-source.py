@@ -160,6 +160,11 @@ def behavior_checks():
         errors.append("CaptureEngine must not crash on unknown SCStream output types")
     if "as! CFDictionary" in capture_engine:
         errors.append("CaptureEngine must not force-cast frame metadata dictionaries")
+    if 'attachments[.contentRect] as? [String: NSNumber]' not in capture_engine:
+        errors.append("CaptureEngine must validate content rectangle metadata as numeric dictionary values")
+    for key in ("X", "Y", "Width", "Height"):
+        if f'contentRectValues["{key}"]' not in capture_engine:
+            errors.append(f"CaptureEngine must validate the content rectangle {key} value")
     if "fatalError(\"No display selected." in screen_recorder:
         errors.append("ScreenRecorder display selection should fail before building a content filter")
     if "fatalError(\"No window selected." in screen_recorder:

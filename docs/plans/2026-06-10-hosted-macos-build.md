@@ -26,6 +26,8 @@ unsigned build gate on a current hosted macOS image.
 - Annotated checkout v6.0.3 and setup-python v6.2.0 immutable commits.
 - Anchored Makefile scripts and Xcode execution to the repository root.
 - Extended the project checker to fail closed if either hosted gate drifts.
+- Updated content-rectangle metadata decoding for the current Swift compiler
+  after the first hosted build exposed an obsolete Core Foundation cast.
 
 ## Verification
 

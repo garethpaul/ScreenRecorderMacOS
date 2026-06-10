@@ -8,6 +8,8 @@
   baseline plan to remain checked in.
 - Added a real unsigned macOS app build on the fixed `macos-15` hosted runner.
 - Made Makefile checks and Xcode execution independent of the caller's directory.
+- Replaced the obsolete conditional `CFDictionary` frame-metadata cast with
+  validated numeric rectangle fields for current Xcode compatibility.
 
 ## 2026-06-09
 
