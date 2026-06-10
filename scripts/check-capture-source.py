@@ -181,6 +181,12 @@ def behavior_checks():
         errors.append("MovieRecorder must create file URLs without force-unwrapping path strings")
     if "FileManager.default.urls(for: .documentDirectory" not in record:
         errors.append("MovieRecorder must resolve the document directory with FileManager URL APIs")
+    if "func cancelRecording()" not in record:
+        errors.append("MovieRecorder must expose startup-failure cancellation")
+    if "assetWriter.cancelWriting()" not in record or "FileManager.default.removeItem(at: assetWriter.outputURL)" not in record:
+        errors.append("MovieRecorder cancellation must cancel the writer and remove its partial file")
+    if "self.movie.cancelRecording()\n                continuation.finish(throwing: error)" not in capture_engine:
+        errors.append("CaptureEngine start failures must cancel the partial movie before finishing")
     if "url.description" in capture_engine:
         errors.append("CaptureEngine must persist recording URLs with absoluteString, not description")
     if "videoEntry.url = url.absoluteString" not in capture_engine:

@@ -37,6 +37,8 @@ Helpful reports include:
   permission.
 - Hosted Xcode compilation disables code signing and does not receive a
   development team, certificate, capture permission, or recording data.
+- Capture setup failures must cancel unfinished movie writers and remove their
+  partial local files without saving recording metadata.
 
 ## Mobile Privacy Notes
 

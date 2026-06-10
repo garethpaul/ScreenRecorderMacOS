@@ -89,6 +89,20 @@ class MovieRecorder {
         }
     }
 
+    func cancelRecording() {
+        guard let assetWriter = assetWriter else {
+            isRecording = false
+            return
+        }
+
+        isRecording = false
+        self.assetWriter = nil
+        assetWriterAudioInput = nil
+        assetWriterVideoInput = nil
+        assetWriter.cancelWriting()
+        try? FileManager.default.removeItem(at: assetWriter.outputURL)
+    }
+
     func recordVideo(sampleBuffer: CMSampleBuffer) {
         guard isRecording,
             let assetWriter = assetWriter else {

@@ -2,6 +2,8 @@
 
 ## 2026-06-10
 
+- Cancelled movie writers and removed unfinished recording files when capture
+  setup fails before streaming begins.
 - Added a least-privilege GitHub Actions check workflow that runs the existing
   static `make check` baseline with pinned Node 24-compatible actions.
 - Added a static project guard requiring the CI workflow and completed CI

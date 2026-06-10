@@ -65,6 +65,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
 
                 stream?.startCapture()
             } catch {
+                self.movie.cancelRecording()
                 continuation.finish(throwing: error)
                 self.continuation = nil
                 self.stream = nil

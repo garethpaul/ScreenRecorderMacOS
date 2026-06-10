@@ -78,6 +78,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   recorder's centralized timer string, with the visible timer reset after stop.
 - Static behavior checks also require recording start failures to stop audio
   metering and reset the visible timer.
+- Static behavior checks also require capture setup failures to cancel the
+  movie writer and remove its unfinished file.
 - Static project checks require the Xcode project to leave `DEVELOPMENT_TEAM`
   empty so local signing identity choices stay out of git.
 - Static project checks also require completed canonical plans under `docs/plans`.
@@ -127,6 +129,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions baseline.
 - See `docs/plans/2026-06-10-hosted-macos-build.md` for the unsigned hosted
   Xcode build boundary.
+- See `docs/plans/2026-06-10-recording-start-file-cleanup.md` for partial movie
+  cleanup when capture setup fails.
 
 ## Contributing
 
