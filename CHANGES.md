@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-10
+
+- Added a least-privilege GitHub Actions check workflow that runs the existing
+  static `make check` baseline with pinned Node 24-compatible actions.
+- Added a static project guard requiring the CI workflow and completed CI
+  baseline plan to remain checked in.
+
 ## 2026-06-09
 
 - Cleared the checked-in Xcode development team and added a static project

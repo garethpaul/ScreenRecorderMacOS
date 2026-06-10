@@ -32,6 +32,9 @@ Helpful reports include:
 - Review found shell execution, subprocess, or dynamic evaluation surfaces; changes in those areas should receive security-focused review before merge.
 - Review found database, model, query, or persistence-related code; changes in those areas should receive security-focused review before merge.
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.
+- GitHub Actions runs the static `make check` baseline before review.
+- CI actions stay pinned by commit and run with read-only repository contents
+  permission.
 
 ## Mobile Privacy Notes
 
