@@ -52,9 +52,8 @@
     <text x="148" y="110" fill="#0f172a" font-size="39" font-weight="800">ScreenRecorderMacOS</text>
     <rect x="910" y="78" width="196" height="36" rx="18" fill="#dae4fc" stroke="#9bb7f6"/>
     <circle cx="934" cy="96" r="6" fill="#2563eb"/>
-    <text x="950" y="101" fill="#1c2639" font-size="15" font-weight="700">Mobile app</text>
-    <text x="86" y="166" fill="#475569" font-size="20" font-weight="500">An Apple platform application or Objective-C/Swift sample. Screen</text>
-<text x="86" y="193" fill="#475569" font-size="20" font-weight="500">Recording</text>
+    <text x="950" y="101" fill="#1c2639" font-size="15" font-weight="700">macOS app</text>
+    <text x="86" y="166" fill="#475569" font-size="20" font-weight="500">A SwiftUI screen-recording sample built with ScreenCaptureKit.</text>
   </g>
 
   <g transform="translate(84 222)">
@@ -118,7 +117,7 @@
   </g>
   <g class="body">
     <rect x="84" y="574" width="130" height="30" rx="15" fill="#dce6fc" stroke="#a3bdf7"/>
-    <text x="100" y="594" fill="#1d46a2" font-size="13" font-weight="800">Mobile app</text>
+    <text x="100" y="594" fill="#1d46a2" font-size="13" font-weight="800">macOS app</text>
 <rect x="224" y="574" width="94" height="30" rx="15" fill="#d9f4f1" stroke="#9ce1da"/>
     <text x="240" y="594" fill="#127b77" font-size="13" font-weight="800">Swift</text>
 <rect x="328" y="574" width="92" height="30" rx="15" fill="#fee9da" stroke="#fcc49d"/>

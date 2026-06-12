@@ -25,11 +25,13 @@ Priority:
 - Release retained capture streams when stop or start failure completes
 - Keep the menu bar recording timer reset after recording stops
 - Clean up audio metering and timer state when recording start fails
+- Remove unfinished movie files when capture setup fails
 - Keep local Xcode signing team choices out of checked-in project metadata
 - Avoid ad hoc stdout debug logging from app Swift sources
 - Keep local persistence failures observable without crashing previews
 - Keep completed maintenance plans under `docs/plans`
 - Keep GitHub Actions running the static `make check` baseline before review
+- Keep the unsigned app compiling on a fixed hosted macOS runner
 - Maintain README notes for known recording bugs
 
 Next priorities:
@@ -43,8 +45,8 @@ Contribution rules:
 - One PR = one focused capture, recording, audio, UI, storage, or documentation change.
 - Do not add background recording without explicit user control.
 - Include manual verification notes for capture changes.
-- Keep `.github/workflows/check.yml` aligned with the static capture baseline
-  until a macOS/Xcode job is documented.
+- Keep `.github/workflows/check.yml` aligned with both the static capture
+  baseline and unsigned hosted macOS build.
 - Keep recording destinations and permissions documented.
 
 ## Security And Responsible Use

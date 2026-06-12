@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -9,7 +10,12 @@ DOCS_PLANS = ROOT / "docs" / "plans"
 CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-screen-recorder-macos-baseline.md"
 TIMER_RESET_PLAN = DOCS_PLANS / "2026-06-09-recording-timer-reset.md"
 CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
+HOSTED_BUILD_PLAN = DOCS_PLANS / "2026-06-10-hosted-macos-build.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
+MAKEFILE = ROOT / "Makefile"
+CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
+SETUP_PYTHON_ACTION = "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405"
+ALLOWED_ACTIONS = {"actions/checkout", "actions/setup-python"}
 
 
 def read_text(relative_path):
@@ -44,6 +50,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-09-recording-timer-reset.md is missing")
     if not CI_PLAN.exists():
         errors.append("docs/plans/2026-06-10-ci-baseline.md is missing")
+    if not HOSTED_BUILD_PLAN.exists():
+        errors.append("docs/plans/2026-06-10-hosted-macos-build.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -84,11 +92,45 @@ def project_checks():
     else:
         workflow = CI_WORKFLOW.read_text(encoding="utf-8")
         if (
-            "uses: actions/checkout@v4" not in workflow
-            or "uses: actions/setup-python@v5" not in workflow
+            workflow.count(f"uses: {CHECKOUT_ACTION}") != 2
+            or workflow.count(f"uses: {SETUP_PYTHON_ACTION}") != 1
+            or 'python-version: "3.12"' not in workflow
+            or "runs-on: ubuntu-24.04" not in workflow
+            or "runs-on: macos-15" not in workflow
+            or "concurrency:" not in workflow
+            or "cancel-in-progress: true" not in workflow
+            or "permissions:\n  contents: read" not in workflow
+            or workflow.count("persist-credentials: false") != 2
+            or "timeout-minutes: 5" not in workflow
+            or "timeout-minutes: 15" not in workflow
+            or "  push:\n" not in workflow
+            or "  pull_request:\n" not in workflow
+            or "workflow_dispatch:" not in workflow
+            or "pull_request_target:" in workflow
+            or "branches:" in workflow
             or "run: make check" not in workflow
+            or "run: make build" not in workflow
         ):
-            errors.append(".github/workflows/check.yml must set up Python and run make check")
+            errors.append(".github/workflows/check.yml must keep the pinned structural and macOS build baselines")
+        for action, revision in re.findall(
+            r"^\s*(?:-\s*)?uses:\s*([^@\s]+)@([^\s#]+)",
+            workflow,
+            flags=re.MULTILINE,
+        ):
+            if action not in ALLOWED_ACTIONS:
+                errors.append(f"GitHub Actions action {action} is not approved")
+            if not re.fullmatch(r"[a-f0-9]{40}", revision):
+                errors.append(f"GitHub Actions action {action} must be pinned to a full commit SHA")
+
+    makefile = MAKEFILE.read_text(encoding="utf-8") if MAKEFILE.exists() else ""
+    for fragment in (
+        "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        '$(PYTHON) "$(ROOT)/scripts/check-capture-source.py" --mode project',
+        'cd "$(ROOT)" && "$(XCODEBUILD)" -project ScreenRecorder.xcodeproj',
+        "CODE_SIGNING_ALLOWED=NO build",
+    ):
+        if fragment not in makefile:
+            errors.append(f"Makefile must keep contract: {fragment}")
 
     for docs_file in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
         if "GitHub Actions" not in read_text(docs_file):
@@ -129,6 +171,11 @@ def behavior_checks():
         errors.append("CaptureEngine must not crash on unknown SCStream output types")
     if "as! CFDictionary" in capture_engine:
         errors.append("CaptureEngine must not force-cast frame metadata dictionaries")
+    if 'attachments[.contentRect] as? [String: NSNumber]' not in capture_engine:
+        errors.append("CaptureEngine must validate content rectangle metadata as numeric dictionary values")
+    for key in ("X", "Y", "Width", "Height"):
+        if f'contentRectValues["{key}"]' not in capture_engine:
+            errors.append(f"CaptureEngine must validate the content rectangle {key} value")
     if "fatalError(\"No display selected." in screen_recorder:
         errors.append("ScreenRecorder display selection should fail before building a content filter")
     if "fatalError(\"No window selected." in screen_recorder:
@@ -145,6 +192,12 @@ def behavior_checks():
         errors.append("MovieRecorder must create file URLs without force-unwrapping path strings")
     if "FileManager.default.urls(for: .documentDirectory" not in record:
         errors.append("MovieRecorder must resolve the document directory with FileManager URL APIs")
+    if "func cancelRecording()" not in record:
+        errors.append("MovieRecorder must expose startup-failure cancellation")
+    if "assetWriter.cancelWriting()" not in record or "FileManager.default.removeItem(at: assetWriter.outputURL)" not in record:
+        errors.append("MovieRecorder cancellation must cancel the writer and remove its partial file")
+    if "self.movie.cancelRecording()\n                continuation.finish(throwing: error)" not in capture_engine:
+        errors.append("CaptureEngine start failures must cancel the partial movie before finishing")
     if "url.description" in capture_engine:
         errors.append("CaptureEngine must persist recording URLs with absoluteString, not description")
     if "videoEntry.url = url.absoluteString" not in capture_engine:

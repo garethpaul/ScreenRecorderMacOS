@@ -2,10 +2,17 @@
 
 ## 2026-06-10
 
-- Added a GitHub Actions check workflow that runs the existing static
-  `make check` baseline on pushes, pull requests, and manual dispatches.
+- Cancelled movie writers and removed unfinished recording files when capture
+  setup fails before streaming begins.
+- Added a least-privilege GitHub Actions check workflow that runs the existing
+  static `make check` baseline on all branch pushes, pull requests, and manual
+  dispatches with pinned Node 24-compatible actions.
 - Added a static project guard requiring the CI workflow and completed CI
   baseline plan to remain checked in.
+- Added a real unsigned macOS app build on the fixed `macos-15` hosted runner.
+- Made Makefile checks and Xcode execution independent of the caller's directory.
+- Replaced the obsolete conditional `CFDictionary` frame-metadata cast with
+  validated numeric rectangle fields for current Xcode compatibility.
 
 ## 2026-06-09
 

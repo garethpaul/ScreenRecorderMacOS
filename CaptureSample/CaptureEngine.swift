@@ -65,6 +65,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
 
                 stream?.startCapture()
             } catch {
+                self.movie.cancelRecording()
                 continuation.finish(throwing: error)
                 self.continuation = nil
                 self.stream = nil
@@ -171,10 +172,17 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
         let surface = unsafeBitCast(surfaceRef, to: IOSurface.self)
 
         // Retrieve the content rectangle, scale, and scale factor.
-        guard let contentRectDict = attachments[.contentRect] as? CFDictionary,
-              let contentRect = CGRect(dictionaryRepresentation: contentRectDict),
+        guard let contentRectValues = attachments[.contentRect] as? [String: NSNumber],
+              let x = contentRectValues["X"],
+              let y = contentRectValues["Y"],
+              let width = contentRectValues["Width"],
+              let height = contentRectValues["Height"],
               let contentScale = attachments[.contentScale] as? CGFloat,
               let scaleFactor = attachments[.scaleFactor] as? CGFloat else { return nil }
+        let contentRect = CGRect(x: x.doubleValue,
+                                 y: y.doubleValue,
+                                 width: width.doubleValue,
+                                 height: height.doubleValue)
 
         // Create a new frame with the relevant data.
         let frame = CapturedFrame(surface: surface,

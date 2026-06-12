@@ -2,7 +2,8 @@
 
 ## Repository purpose
 
-`garethpaul/ScreenRecorderMacOS` is an Apple platform application or Objective-C/Swift sample. Screen Recording for MacOS
+`garethpaul/ScreenRecorderMacOS` is a SwiftUI macOS screen-recording sample
+built with ScreenCaptureKit.
 
 ## Project structure
 
