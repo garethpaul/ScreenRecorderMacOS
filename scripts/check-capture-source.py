@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS_PLANS = ROOT / "docs" / "plans"
 CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-screen-recorder-macos-baseline.md"
 TIMER_RESET_PLAN = DOCS_PLANS / "2026-06-09-recording-timer-reset.md"
+CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
+CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 
 
 def read_text(relative_path):
@@ -40,6 +42,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-08-screen-recorder-macos-baseline.md is missing")
     if not TIMER_RESET_PLAN.exists():
         errors.append("docs/plans/2026-06-09-recording-timer-reset.md is missing")
+    if not CI_PLAN.exists():
+        errors.append("docs/plans/2026-06-10-ci-baseline.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -74,6 +78,21 @@ def project_checks():
     for line_number, line in enumerate(project.splitlines(), 1):
         if "DEVELOPMENT_TEAM =" in line and 'DEVELOPMENT_TEAM = "";' not in line:
             errors.append(f"project.pbxproj:{line_number} must not commit a concrete DEVELOPMENT_TEAM")
+
+    if not CI_WORKFLOW.exists():
+        errors.append(".github/workflows/check.yml is missing")
+    else:
+        workflow = CI_WORKFLOW.read_text(encoding="utf-8")
+        if (
+            "uses: actions/checkout@v4" not in workflow
+            or "uses: actions/setup-python@v5" not in workflow
+            or "run: make check" not in workflow
+        ):
+            errors.append(".github/workflows/check.yml must set up Python and run make check")
+
+    for docs_file in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
+        if "GitHub Actions" not in read_text(docs_file):
+            errors.append(f"{docs_file} must document the GitHub Actions baseline")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
