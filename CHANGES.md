@@ -2,6 +2,10 @@
 
 ## 2026-06-12
 
+- Required completed `AVAssetWriter` finalization before persisting recording
+  history, removed failed partial movies, and cleared recorder input state.
+- Added static contracts and a maintenance plan for the recording finalization
+  boundary.
 - Removed the force unwrap from recorder handoff and added static identity
   coverage for capture startup.
 

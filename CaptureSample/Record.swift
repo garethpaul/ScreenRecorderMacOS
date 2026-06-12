@@ -76,15 +76,24 @@ class MovieRecorder {
         isRecording = true
     }
 
-    func stopRecording(completion: @escaping (URL) -> Void) {
+    func stopRecording(completion: @escaping (URL?) -> Void) {
+        let assetWriter = self.assetWriter
+        isRecording = false
+        self.assetWriter = nil
+        assetWriterAudioInput = nil
+        assetWriterVideoInput = nil
+
         guard let assetWriter = assetWriter else {
+            completion(nil)
             return
         }
 
-        self.isRecording = false
-        self.assetWriter = nil
-
         assetWriter.finishWriting {
+            guard assetWriter.status == .completed else {
+                try? FileManager.default.removeItem(at: assetWriter.outputURL)
+                completion(nil)
+                return
+            }
             completion(assetWriter.outputURL)
         }
     }

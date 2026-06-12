@@ -26,6 +26,8 @@ Priority:
 - Keep the menu bar recording timer reset after recording stops
 - Clean up audio metering and timer state when recording start fails
 - Remove unfinished movie files when capture setup fails
+- Persist recording history only after successful movie finalization and remove
+  failed partial outputs
 - Keep recorder handoff identity explicit and force-unwrap-free
 - Keep local Xcode signing team choices out of checked-in project metadata
 - Avoid ad hoc stdout debug logging from app Swift sources

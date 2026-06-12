@@ -82,6 +82,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   metering and reset the visible timer.
 - Static behavior checks also require capture setup failures to cancel the
   movie writer and remove its unfinished file.
+- Static behavior checks require recording finalization to return only
+  completed movie URLs, remove failed partial files, and skip recording-history
+  persistence when no completed URL exists.
 - Static behavior checks require the capture engine and stream output recorder
   handoff to preserve caller identity without a force unwrap.
 - Static project checks require the Xcode project to leave `DEVELOPMENT_TEAM`

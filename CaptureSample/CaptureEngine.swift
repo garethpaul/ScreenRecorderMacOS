@@ -86,6 +86,10 @@ class CaptureEngine: NSObject, @unchecked Sendable {
         }
         powerMeter.processSilence()
         self.movie.stopRecording { [self] url in
+            guard let url = url else {
+                return
+            }
+
             // save to CoreData
             let endTime = Date()
 

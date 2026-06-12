@@ -39,6 +39,8 @@ Helpful reports include:
   development team, certificate, capture permission, or recording data.
 - Capture setup failures must cancel unfinished movie writers and remove their
   partial local files without saving recording metadata.
+- Recording finalization persists history only after the asset writer reports
+  completion; failed partial files are removed without logging their URLs.
 - The capture engine and stream output use the caller-provided recorder handoff
   directly, avoiding a force unwrap in the recording startup path.
 
