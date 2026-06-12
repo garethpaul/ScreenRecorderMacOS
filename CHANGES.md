@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-12
+
+- Removed the force unwrap from recorder handoff and added static identity
+  coverage for capture startup.
+
 ## 2026-06-10
 
 - Cancelled movie writers and removed unfinished recording files when capture

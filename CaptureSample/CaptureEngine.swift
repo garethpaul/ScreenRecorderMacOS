@@ -52,7 +52,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             streamOutput.movie = movie
             streamOutput.capturedFrameHandler = { continuation.yield($0) }
             streamOutput.pcmBufferHandler = { self.powerMeter.process(buffer: $0) }
-            self.movie = streamOutput.movie!
+            self.movie = movie
             self.startTime = Date()
             self.movie.startRecording(height: Int(configuration.height), width: Int(configuration.width))
 

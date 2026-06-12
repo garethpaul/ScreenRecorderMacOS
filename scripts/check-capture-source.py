@@ -11,6 +11,7 @@ CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-screen-recorder-macos-baseline.md"
 TIMER_RESET_PLAN = DOCS_PLANS / "2026-06-09-recording-timer-reset.md"
 CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
 HOSTED_BUILD_PLAN = DOCS_PLANS / "2026-06-10-hosted-macos-build.md"
+RECORDER_HANDOFF_PLAN = DOCS_PLANS / "2026-06-12-recorder-handoff-identity.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -52,6 +53,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-10-ci-baseline.md is missing")
     if not HOSTED_BUILD_PLAN.exists():
         errors.append("docs/plans/2026-06-10-hosted-macos-build.md is missing")
+    if not RECORDER_HANDOFF_PLAN.exists():
+        errors.append("docs/plans/2026-06-12-recorder-handoff-identity.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -133,8 +136,11 @@ def project_checks():
             errors.append(f"Makefile must keep contract: {fragment}")
 
     for docs_file in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
-        if "GitHub Actions" not in read_text(docs_file):
+        document = read_text(docs_file)
+        if "GitHub Actions" not in document:
             errors.append(f"{docs_file} must document the GitHub Actions baseline")
+        if "recorder handoff" not in document:
+            errors.append(f"{docs_file} must document the recorder handoff contract")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -234,6 +240,10 @@ def behavior_checks():
         errors.append("ScreenRecorder.start must stop audio metering and reset the timer when capture startup throws")
     if "isRunning = false\n        startTime = Date()\n        resetTimer()" not in screen_recorder:
         errors.append("ScreenRecorder.stop must reset the visible timer after recording completes")
+    if "streamOutput.movie!" in capture_engine:
+        errors.append("CaptureEngine must not force unwrap the recorder during handoff")
+    if "streamOutput.movie = movie" not in capture_engine or "self.movie = movie" not in capture_engine:
+        errors.append("CaptureEngine and stream output must share the caller-provided recorder")
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")
     if "Text(screenRecorder.timerString)" not in capture_app:

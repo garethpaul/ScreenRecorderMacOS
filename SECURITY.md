@@ -39,6 +39,8 @@ Helpful reports include:
   development team, certificate, capture permission, or recording data.
 - Capture setup failures must cancel unfinished movie writers and remove their
   partial local files without saving recording metadata.
+- The capture engine and stream output use the caller-provided recorder handoff
+  directly, avoiding a force unwrap in the recording startup path.
 
 ## Mobile Privacy Notes
 

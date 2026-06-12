@@ -82,6 +82,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   metering and reset the visible timer.
 - Static behavior checks also require capture setup failures to cancel the
   movie writer and remove its unfinished file.
+- Static behavior checks require the capture engine and stream output recorder
+  handoff to preserve caller identity without a force unwrap.
 - Static project checks require the Xcode project to leave `DEVELOPMENT_TEAM`
   empty so local signing identity choices stay out of git.
 - Static project checks also require completed canonical plans under `docs/plans`.
@@ -133,6 +135,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Xcode build boundary.
 - See `docs/plans/2026-06-10-recording-start-file-cleanup.md` for partial movie
   cleanup when capture setup fails.
+- See `docs/plans/2026-06-12-recorder-handoff-identity.md` for the force-unwrap-
+  free recorder handoff contract.
 
 ## Contributing
 
