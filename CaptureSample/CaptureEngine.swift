@@ -85,22 +85,20 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             continuation?.finish(throwing: error)
         }
         powerMeter.processSilence()
-        self.movie.stopRecording { [self] url in
-            guard let url = url else {
-                return
-            }
-
-            // save to CoreData
-            let endTime = Date()
-
-            let videoEntry = VideoEntry(context: DataController.shared.moc)
-            videoEntry.id = UUID()
-            videoEntry.url = url.absoluteString
-            videoEntry.startTime = self.startTime
-            videoEntry.endTime = endTime
-            DataController.shared.save()
-
+        guard let url = await self.movie.stopRecording() else {
+            return
         }
+
+        // save to CoreData
+        let endTime = Date()
+
+        let videoEntry = VideoEntry(context: DataController.shared.moc)
+        videoEntry.id = UUID()
+        videoEntry.url = url.absoluteString
+        videoEntry.startTime = self.startTime
+        videoEntry.endTime = endTime
+        DataController.shared.save()
+
     }
 
     /// - Tag: UpdateStreamConfiguration

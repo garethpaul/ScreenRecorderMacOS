@@ -85,6 +85,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Static behavior checks require recording finalization to return only
   completed movie URLs, remove failed partial files, and skip recording-history
   persistence when no completed URL exists.
+- Static behavior checks require awaited recording finalization so the recorder
+  does not publish idle state before movie validation and persistence finish.
 - Static behavior checks require the capture engine and stream output recorder
   handoff to preserve caller identity without a force unwrap.
 - Static project checks require the Xcode project to leave `DEVELOPMENT_TEAM`
@@ -140,6 +142,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   cleanup when capture setup fails.
 - See `docs/plans/2026-06-12-recorder-handoff-identity.md` for the force-unwrap-
   free recorder handoff contract.
+- See `docs/plans/2026-06-13-awaited-recording-finalization.md` for the awaited
+  recording finalization and persistence boundary.
 
 ## Contributing
 

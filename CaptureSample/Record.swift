@@ -76,7 +76,7 @@ class MovieRecorder {
         isRecording = true
     }
 
-    func stopRecording(completion: @escaping (URL?) -> Void) {
+    func stopRecording() async -> URL? {
         let assetWriter = self.assetWriter
         isRecording = false
         self.assetWriter = nil
@@ -84,17 +84,18 @@ class MovieRecorder {
         assetWriterVideoInput = nil
 
         guard let assetWriter = assetWriter else {
-            completion(nil)
-            return
+            return nil
         }
 
-        assetWriter.finishWriting {
-            guard assetWriter.status == .completed else {
-                try? FileManager.default.removeItem(at: assetWriter.outputURL)
-                completion(nil)
-                return
+        return await withCheckedContinuation { continuation in
+            assetWriter.finishWriting {
+                guard assetWriter.status == .completed else {
+                    try? FileManager.default.removeItem(at: assetWriter.outputURL)
+                    continuation.resume(returning: nil)
+                    return
+                }
+                continuation.resume(returning: assetWriter.outputURL)
             }
-            completion(assetWriter.outputURL)
         }
     }
 

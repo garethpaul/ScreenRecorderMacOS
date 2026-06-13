@@ -41,6 +41,8 @@ Helpful reports include:
   partial local files without saving recording metadata.
 - Recording finalization persists history only after the asset writer reports
   completion; failed partial files are removed without logging their URLs.
+- Awaited recording finalization keeps stop completion and idle-state publication
+  behind movie validation and recording-history persistence.
 - The capture engine and stream output use the caller-provided recorder handoff
   directly, avoiding a force unwrap in the recording startup path.
 

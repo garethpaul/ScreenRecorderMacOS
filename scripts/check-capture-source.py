@@ -13,6 +13,7 @@ CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
 HOSTED_BUILD_PLAN = DOCS_PLANS / "2026-06-10-hosted-macos-build.md"
 RECORDER_HANDOFF_PLAN = DOCS_PLANS / "2026-06-12-recorder-handoff-identity.md"
 RECORDING_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-12-recording-finalization-integrity.md"
+AWAITED_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-13-awaited-recording-finalization.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -58,6 +59,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-12-recorder-handoff-identity.md is missing")
     if not RECORDING_FINALIZATION_PLAN.exists():
         errors.append("docs/plans/2026-06-12-recording-finalization-integrity.md is missing")
+    if not AWAITED_FINALIZATION_PLAN.exists():
+        errors.append("docs/plans/2026-06-13-awaited-recording-finalization.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -144,6 +147,8 @@ def project_checks():
             errors.append(f"{docs_file} must document the GitHub Actions baseline")
         if "recorder handoff" not in document:
             errors.append(f"{docs_file} must document the recorder handoff contract")
+        if "awaited recording finalization" not in document.lower():
+            errors.append(f"{docs_file} must document awaited recording finalization")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -207,19 +212,21 @@ def behavior_checks():
         errors.append("MovieRecorder cancellation must cancel the writer and remove its partial file")
     if "self.movie.cancelRecording()\n                continuation.finish(throwing: error)" not in capture_engine:
         errors.append("CaptureEngine start failures must cancel the partial movie before finishing")
-    if "func stopRecording(completion: @escaping (URL?) -> Void)" not in record:
-        errors.append("MovieRecorder stop completion must distinguish completed and failed output URLs")
+    if "func stopRecording() async -> URL?" not in record:
+        errors.append("MovieRecorder stop must expose an awaitable completed-or-failed output URL")
     if "let assetWriter = self.assetWriter\n        isRecording = false\n        self.assetWriter = nil\n        assetWriterAudioInput = nil\n        assetWriterVideoInput = nil\n\n        guard let assetWriter = assetWriter else" not in record:
         errors.append("MovieRecorder stop must clear all recorder state before handling an absent writer")
-    if "guard let assetWriter = assetWriter else {\n            completion(nil)\n            return\n        }" not in record:
+    if "guard let assetWriter = assetWriter else {\n            return nil\n        }" not in record:
         errors.append("MovieRecorder stop must complete with no URL when no writer is active")
     if "guard assetWriter.status == .completed else {" not in record:
         errors.append("MovieRecorder stop must require completed writer status before returning an output URL")
-    if record.count("completion(nil)") < 2:
-        errors.append("MovieRecorder stop must report both absent-writer and failed-finalization outcomes")
-    if "guard assetWriter.status == .completed else {\n                try? FileManager.default.removeItem(at: assetWriter.outputURL)" not in record:
+    if "return await withCheckedContinuation { continuation in" not in record:
+        errors.append("MovieRecorder stop must await AVAssetWriter finalization")
+    if "continuation.resume(returning: nil)" not in record or "continuation.resume(returning: assetWriter.outputURL)" not in record:
+        errors.append("MovieRecorder stop must resume awaited finalization for failed and completed outputs")
+    if "guard assetWriter.status == .completed else {\n                    try? FileManager.default.removeItem(at: assetWriter.outputURL)" not in record:
         errors.append("MovieRecorder stop must remove the partial output when finalization fails")
-    if "guard let url = url else {\n                return\n            }\n\n            // save to CoreData" not in capture_engine:
+    if "guard let url = await self.movie.stopRecording() else {\n            return\n        }\n\n        // save to CoreData" not in capture_engine:
         errors.append("CaptureEngine must not persist metadata without a completed recording URL")
     if "url.description" in capture_engine:
         errors.append("CaptureEngine must persist recording URLs with absoluteString, not description")

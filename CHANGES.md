@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-13
+
+- Added awaited recording finalization so capture stop returns only after movie
+  validation and recording-history persistence complete.
+
 ## 2026-06-12
 
 - Required completed `AVAssetWriter` finalization before persisting recording
