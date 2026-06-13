@@ -43,6 +43,8 @@ Helpful reports include:
   completion; failed partial files are removed without logging their URLs.
 - Awaited recording finalization keeps stop completion and idle-state publication
   behind movie validation and recording-history persistence.
+- Audio sample forwarding keeps accepted ScreenCaptureKit buffers on the local
+  metering and movie-writer paths without adding a new capture source.
 - The capture engine and stream output use the caller-provided recorder handoff
   directly, avoiding a force unwrap in the recording startup path.
 

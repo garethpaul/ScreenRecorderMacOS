@@ -14,6 +14,7 @@ HOSTED_BUILD_PLAN = DOCS_PLANS / "2026-06-10-hosted-macos-build.md"
 RECORDER_HANDOFF_PLAN = DOCS_PLANS / "2026-06-12-recorder-handoff-identity.md"
 RECORDING_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-12-recording-finalization-integrity.md"
 AWAITED_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-13-awaited-recording-finalization.md"
+AUDIO_FORWARDING_PLAN = DOCS_PLANS / "2026-06-13-audio-sample-forwarding.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -61,6 +62,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-12-recording-finalization-integrity.md is missing")
     if not AWAITED_FINALIZATION_PLAN.exists():
         errors.append("docs/plans/2026-06-13-awaited-recording-finalization.md is missing")
+    if not AUDIO_FORWARDING_PLAN.exists():
+        errors.append("docs/plans/2026-06-13-audio-sample-forwarding.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -149,6 +152,8 @@ def project_checks():
             errors.append(f"{docs_file} must document the recorder handoff contract")
         if "awaited recording finalization" not in document.lower():
             errors.append(f"{docs_file} must document awaited recording finalization")
+        if "audio sample forwarding" not in document.lower():
+            errors.append(f"{docs_file} must document audio sample forwarding")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -187,6 +192,21 @@ def behavior_checks():
         errors.append("CaptureEngine must not force-cast frame metadata dictionaries")
     if 'attachments[.contentRect] as? [String: NSNumber]' not in capture_engine:
         errors.append("CaptureEngine must validate content rectangle metadata as numeric dictionary values")
+    audio_case = re.search(r"case \.audio:(.*?)(?=\n\s*@unknown default:)", capture_engine, re.DOTALL)
+    if not audio_case:
+        errors.append("CaptureEngine must handle ScreenCaptureKit audio samples")
+    else:
+        audio_body = audio_case.group(1)
+        required_audio_flow = (
+            "guard let samples = createPCMBuffer(for: sampleBuffer) else { return }",
+            "pcmBufferHandler?(samples)",
+            "movie?.recordAudio(sampleBuffer: sampleBuffer)",
+        )
+        positions = [audio_body.find(fragment) for fragment in required_audio_flow]
+        if any(position < 0 for position in positions) or positions != sorted(positions):
+            errors.append("CaptureEngine audio output must convert, meter, and forward the accepted sample in order")
+        if audio_body.count("movie?.recordAudio(sampleBuffer: sampleBuffer)") != 1:
+            errors.append("CaptureEngine audio output must forward each accepted sample exactly once")
     for key in ("X", "Y", "Width", "Height"):
         if f'contentRectValues["{key}"]' not in capture_engine:
             errors.append(f"CaptureEngine must validate the content rectangle {key} value")

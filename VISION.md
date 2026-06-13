@@ -29,6 +29,7 @@ Priority:
 - Persist recording history only after successful movie finalization and remove
   failed partial outputs
 - Keep awaited recording finalization ahead of recorder idle state
+- Preserve audio sample forwarding to metering and movie output
 - Keep recorder handoff identity explicit and force-unwrap-free
 - Keep local Xcode signing team choices out of checked-in project metadata
 - Avoid ad hoc stdout debug logging from app Swift sources

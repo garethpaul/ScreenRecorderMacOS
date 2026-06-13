@@ -148,6 +148,7 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
             // Create an AVAudioPCMBuffer from an audio sample buffer.
             guard let samples = createPCMBuffer(for: sampleBuffer) else { return }
             pcmBufferHandler?(samples)
+            movie?.recordAudio(sampleBuffer: sampleBuffer)
         @unknown default:
             logger.error("Ignoring unknown stream output type from ScreenCaptureKit")
         }

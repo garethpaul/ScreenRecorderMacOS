@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Added audio sample forwarding from accepted ScreenCaptureKit buffers to the
+  movie recorder while preserving live metering.
 - Added awaited recording finalization so capture stop returns only after movie
   validation and recording-history persistence complete.
 

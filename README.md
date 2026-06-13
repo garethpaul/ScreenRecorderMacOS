@@ -87,6 +87,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   persistence when no completed URL exists.
 - Static behavior checks require awaited recording finalization so the recorder
   does not publish idle state before movie validation and persistence finish.
+- Static behavior checks preserve audio sample forwarding from accepted
+  ScreenCaptureKit buffers to both live metering and the movie recorder.
 - Static behavior checks require the capture engine and stream output recorder
   handoff to preserve caller identity without a force unwrap.
 - Static project checks require the Xcode project to leave `DEVELOPMENT_TEAM`
@@ -144,6 +146,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   free recorder handoff contract.
 - See `docs/plans/2026-06-13-awaited-recording-finalization.md` for the awaited
   recording finalization and persistence boundary.
+- See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
+  output contract.
 
 ## Contributing
 
