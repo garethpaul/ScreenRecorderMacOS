@@ -148,6 +148,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   recording finalization and persistence boundary.
 - See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
   output contract.
+- See `docs/plans/2026-06-14-make-root-override-protection.md` for the
+  caller-resistant, location-independent capture verification root.
 
 ## Contributing
 
