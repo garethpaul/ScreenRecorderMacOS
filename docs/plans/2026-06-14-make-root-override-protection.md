@@ -1,6 +1,6 @@
 # Make Root Override Protection
 
-## Status: Planned
+## Status: Completed
 
 ## Context
 
@@ -52,3 +52,26 @@ execution, Python 3.12 validation, mutations, and integrity screening.
 - root-declaration, checker, plan-status, README-index, and evidence mutations
 - Python syntax, workflow YAML, protected-file, secret, artifact, and
   `git diff --check` gates
+
+## Work Completed
+
+- Protected the Makefile-derived repository root from command-line and
+  environment overrides while preserving configurable Python and Xcode tools.
+- Added exact declaration, completed-evidence, and README-index contracts.
+- Preserved all Swift, recording, persistence, signing, workflow, and hosted
+  macOS build boundaries.
+
+## Verification Results
+
+- `python3 scripts/check-capture-source.py --mode project` and
+  `python3 scripts/check-capture-source.py --mode behavior` both passed.
+- From both the checkout and an external directory, all five public Make aliases passed.
+- `make ROOT=/tmp check` passed externally while still executing repository-owned
+  project and behavior contracts.
+- Python 3.12 passed the full static gate; local Xcode compilation was skipped
+  because `xcodebuild` was unavailable, leaving the hosted macOS build authoritative.
+- Six hostile mutations were rejected across root declaration, checker
+  expectation, plan status, README indexing, and recorded evidence.
+- Python syntax, workflow YAML, exact-base protected-file comparison, secret
+  screening, generated-artifact screening, and `git diff --check` passed before
+  shipping.

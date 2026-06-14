@@ -15,6 +15,7 @@ RECORDER_HANDOFF_PLAN = DOCS_PLANS / "2026-06-12-recorder-handoff-identity.md"
 RECORDING_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-12-recording-finalization-integrity.md"
 AWAITED_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-13-awaited-recording-finalization.md"
 AUDIO_FORWARDING_PLAN = DOCS_PLANS / "2026-06-13-audio-sample-forwarding.md"
+MAKE_ROOT_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -64,6 +65,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-13-awaited-recording-finalization.md is missing")
     if not AUDIO_FORWARDING_PLAN.exists():
         errors.append("docs/plans/2026-06-13-audio-sample-forwarding.md is missing")
+    if not MAKE_ROOT_PLAN.exists():
+        errors.append("docs/plans/2026-06-14-make-root-override-protection.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -135,14 +138,42 @@ def project_checks():
                 errors.append(f"GitHub Actions action {action} must be pinned to a full commit SHA")
 
     makefile = MAKEFILE.read_text(encoding="utf-8") if MAKEFILE.exists() else ""
+    root_declaration = "override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))"
+    root_assignments = [
+        line
+        for line in makefile.splitlines()
+        if re.match(r"^(?:override\s+)?ROOT\s*[:?+]?=", line)
+    ]
+    if not makefile.startswith(f"{root_declaration}\n") or root_assignments != [
+        root_declaration
+    ]:
+        errors.append(
+            "Makefile must define exactly one protected repository-derived ROOT declaration first"
+        )
     for fragment in (
-        "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        root_declaration,
         '$(PYTHON) "$(ROOT)/scripts/check-capture-source.py" --mode project',
         'cd "$(ROOT)" && "$(XCODEBUILD)" -project ScreenRecorder.xcodeproj',
         "CODE_SIGNING_ALLOWED=NO build",
     ):
         if fragment not in makefile:
             errors.append(f"Makefile must keep contract: {fragment}")
+
+    if MAKE_ROOT_PLAN.exists():
+        root_plan = MAKE_ROOT_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "`make ROOT=/tmp check` passed",
+            "all five public Make aliases passed",
+            "Six hostile mutations were rejected",
+            "Python 3.12",
+        ):
+            if evidence not in root_plan:
+                errors.append(
+                    f"{MAKE_ROOT_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+        if str(MAKE_ROOT_PLAN.relative_to(ROOT)) not in read_text("README.md"):
+            errors.append(f"README.md must reference {MAKE_ROOT_PLAN.relative_to(ROOT)}")
 
     for docs_file in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
         document = read_text(docs_file)
