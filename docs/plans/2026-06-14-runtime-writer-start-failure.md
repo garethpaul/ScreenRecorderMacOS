@@ -1,6 +1,6 @@
 # Runtime Writer Start Failure
 
-## Status: Planned
+## Status: Completed
 
 ## Context
 
@@ -47,6 +47,20 @@ the active capture path instead of presenting a recording that cannot finalize.
   mutations
 - hosted unsigned macOS build on the exact pull-request head
 - generated-artifact, recording-file, credential-pattern, and exact-diff audits
+
+## Verification Results
+
+- Focused behavior source contracts passed with the writer Boolean result,
+  fallback error, error forwarding, cleanup ordering, and asynchronous stream
+  shutdown retained.
+- The repository and external-directory `make check` passed; Linux truthfully
+  reported the static-only boundary because `xcodebuild` is unavailable.
+- Six hostile runtime writer mutations were rejected across result checking,
+  thrown error, forwarding, cleanup, documentation, and completed-plan status.
+- Final generated-artifact, recording-file, and credential-pattern audits passed
+  with only the intended recorder, capture engine, checker, documentation, and
+  plan changes.
+- Hosted unsigned macOS compilation remains required on the exact pushed head.
 
 ## Risks
 

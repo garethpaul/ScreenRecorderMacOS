@@ -17,6 +17,7 @@ AWAITED_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-13-awaited-recording-finalizat
 AUDIO_FORWARDING_PLAN = DOCS_PLANS / "2026-06-13-audio-sample-forwarding.md"
 MAKE_ROOT_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-writer-start-failure-propagation.md"
+RUNTIME_WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-runtime-writer-start-failure.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -40,6 +41,7 @@ def require_paths():
         "CaptureSample/Record.swift",
         "CaptureSample/PlayerViewer.swift",
         str(WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
+        str(RUNTIME_WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -189,6 +191,8 @@ def project_checks():
             errors.append(f"{docs_file} must document audio sample forwarding")
         if "writer startup failure" not in document.lower():
             errors.append(f"{docs_file} must document writer startup failure propagation")
+        if "runtime writer start failure" not in document.lower():
+            errors.append(f"{docs_file} must document runtime writer start failure containment")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -331,6 +335,27 @@ def behavior_checks():
         errors.append("MovieRecorder must propagate missing output-directory failures")
     if "let assetWriter = try AVAssetWriter(url: outputFileURL, fileType: .mov)" not in record:
         errors.append("MovieRecorder must propagate AVAssetWriter creation failures")
+    for fragment in (
+        "case assetWriterStartFailed",
+        "func recordVideo(sampleBuffer: CMSampleBuffer) throws",
+        "guard assetWriter.startWriting() else {",
+        "throw assetWriter.error ?? MovieRecorderError.assetWriterStartFailed",
+    ):
+        if fragment not in record:
+            errors.append(f"MovieRecorder must propagate runtime writer start failures via {fragment!r}")
+    for fragment in (
+        "streamOutput.recordingErrorHandler = { [weak self] error in",
+        "self?.failCapture(error)",
+        "private func failCapture(_ error: Error)",
+        "movie.cancelRecording()\n        continuation?.finish(throwing: error)",
+        "let stream = self.stream\n        self.stream = nil",
+        "try? await stream?.stopCapture()",
+        "var recordingErrorHandler: ((Error) -> Void)?",
+        "try movie?.recordVideo(sampleBuffer: sampleBuffer)",
+        "recordingErrorHandler?(error)",
+    ):
+        if fragment not in capture_engine:
+            errors.append(f"CaptureEngine must contain runtime writer failure via {fragment!r}")
     writer_start = capture_engine.find("try self.movie.startRecording(")
     stream_start = capture_engine.find("stream = SCStream(")
     failure_cleanup = capture_engine.find("self.movie.cancelRecording()")
@@ -347,6 +372,18 @@ def behavior_checks():
             if evidence not in writer_plan:
                 errors.append(
                     f"{WRITER_START_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+    if RUNTIME_WRITER_START_FAILURE_PLAN.exists():
+        runtime_writer_plan = RUNTIME_WRITER_START_FAILURE_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "hostile runtime writer mutations were rejected",
+            "generated-artifact, recording-file, and credential-pattern audits passed",
+        ):
+            if evidence not in runtime_writer_plan:
+                errors.append(
+                    f"{RUNTIME_WRITER_START_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
                 )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")

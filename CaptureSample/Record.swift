@@ -5,6 +5,7 @@ import AVFoundation
 
 enum MovieRecorderError: Error {
     case documentDirectoryUnavailable
+    case assetWriterStartFailed
 }
 
 class MovieRecorder {
@@ -115,14 +116,16 @@ class MovieRecorder {
         try? FileManager.default.removeItem(at: assetWriter.outputURL)
     }
 
-    func recordVideo(sampleBuffer: CMSampleBuffer) {
+    func recordVideo(sampleBuffer: CMSampleBuffer) throws {
         guard isRecording,
             let assetWriter = assetWriter else {
                 return
         }
 
         if assetWriter.status == .unknown {
-            assetWriter.startWriting()
+            guard assetWriter.startWriting() else {
+                throw assetWriter.error ?? MovieRecorderError.assetWriterStartFailed
+            }
             assetWriter.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
         } else if assetWriter.status == .writing {
             if let input = assetWriterVideoInput,

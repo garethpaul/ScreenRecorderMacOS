@@ -52,6 +52,9 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             streamOutput.movie = movie
             streamOutput.capturedFrameHandler = { continuation.yield($0) }
             streamOutput.pcmBufferHandler = { self.powerMeter.process(buffer: $0) }
+            streamOutput.recordingErrorHandler = { [weak self] error in
+                self?.failCapture(error)
+            }
             self.movie = movie
             self.startTime = Date()
 
@@ -101,6 +104,17 @@ class CaptureEngine: NSObject, @unchecked Sendable {
 
     }
 
+    private func failCapture(_ error: Error) {
+        movie.cancelRecording()
+        continuation?.finish(throwing: error)
+        continuation = nil
+        let stream = self.stream
+        self.stream = nil
+        Task {
+            try? await stream?.stopCapture()
+        }
+    }
+
     /// - Tag: UpdateStreamConfiguration
     func update(configuration: SCStreamConfiguration, filter: SCContentFilter) async {
         do {
@@ -119,6 +133,7 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
 
     var pcmBufferHandler: ((AVAudioPCMBuffer) -> Void)?
     var capturedFrameHandler: ((CapturedFrame) -> Void)?
+    var recordingErrorHandler: ((Error) -> Void)?
 
     // Store the the startCapture continuation, so you can cancel it if an error occurs.
     private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
@@ -142,7 +157,11 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
             // Create a CapturedFrame structure for a video sample buffer.
             guard let frame = createFrame(for: sampleBuffer) else { return }
             capturedFrameHandler?(frame)
-            movie?.recordVideo(sampleBuffer: sampleBuffer)
+            do {
+                try movie?.recordVideo(sampleBuffer: sampleBuffer)
+            } catch {
+                recordingErrorHandler?(error)
+            }
 
         case .audio:
             // Create an AVAudioPCMBuffer from an audio sample buffer.

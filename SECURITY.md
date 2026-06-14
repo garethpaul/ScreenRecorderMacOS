@@ -41,6 +41,8 @@ Helpful reports include:
   partial local files without saving recording metadata.
 - A writer startup failure must propagate before ScreenCaptureKit starts so no
   writerless recording state is exposed.
+- A runtime writer start failure must cancel partial output and stop the active
+  capture stream instead of leaving a writerless recording running.
 - Recording finalization persists history only after the asset writer reports
   completion; failed partial files are removed without logging their URLs.
 - Awaited recording finalization keeps stop completion and idle-state publication

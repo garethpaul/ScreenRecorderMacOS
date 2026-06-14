@@ -2,6 +2,8 @@
 
 ## 2026-06-14
 
+- Propagated runtime writer start failure from the first video frame through
+  partial-file cleanup and capture-stream shutdown.
 - Propagated movie writer startup failures before constructing or starting the
   ScreenCaptureKit stream.
 
