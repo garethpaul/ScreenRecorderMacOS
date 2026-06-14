@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-14
+
+- Propagated movie writer startup failures before constructing or starting the
+  ScreenCaptureKit stream.
+
 ## 2026-06-13
 
 - Added audio sample forwarding from accepted ScreenCaptureKit buffers to the

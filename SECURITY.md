@@ -39,6 +39,8 @@ Helpful reports include:
   development team, certificate, capture permission, or recording data.
 - Capture setup failures must cancel unfinished movie writers and remove their
   partial local files without saving recording metadata.
+- A writer startup failure must propagate before ScreenCaptureKit starts so no
+  writerless recording state is exposed.
 - Recording finalization persists history only after the asset writer reports
   completion; failed partial files are removed without logging their URLs.
 - Awaited recording finalization keeps stop completion and idle-state publication

@@ -3,6 +3,10 @@ import SwiftUI
 import Foundation
 import AVFoundation
 
+enum MovieRecorderError: Error {
+    case documentDirectoryUnavailable
+}
+
 class MovieRecorder {
 
     private var assetWriter: AVAssetWriter?
@@ -29,17 +33,15 @@ class MovieRecorder {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
     }
 
-    func startRecording(height: Int, width: Int) {
+    func startRecording(height: Int, width: Int) throws {
         // Create an asset writer that records to a temporary file
         let outputFileName = NSUUID().uuidString
         guard let outputFileURL = documentDirectory()?
             .appendingPathComponent(outputFileName)
             .appendingPathExtension("MOV") else {
-            return
+            throw MovieRecorderError.documentDirectoryUnavailable
         }
-        guard let assetWriter = try? AVAssetWriter(url: outputFileURL, fileType: .mov) else {
-            return
-        }
+        let assetWriter = try AVAssetWriter(url: outputFileURL, fileType: .mov)
 
         // Add an audio input
         // Add an audio input

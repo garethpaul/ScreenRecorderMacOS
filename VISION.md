@@ -25,6 +25,7 @@ Priority:
 - Release retained capture streams when stop or start failure completes
 - Keep the menu bar recording timer reset after recording stops
 - Clean up audio metering and timer state when recording start fails
+- Propagate writer startup failure before ScreenCaptureKit enters capture
 - Remove unfinished movie files when capture setup fails
 - Persist recording history only after successful movie finalization and remove
   failed partial outputs

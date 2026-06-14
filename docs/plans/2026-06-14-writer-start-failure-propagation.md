@@ -1,6 +1,6 @@
 # Writer Start Failure Propagation
 
-## Status: Planned
+## Status: Completed
 
 ## Context
 
@@ -36,3 +36,17 @@ the destination writer was created successfully.
 - hostile writer-error, ordering, cleanup, documentation, and plan mutations
 - hosted unsigned macOS build on canonical push and pull-request events
 - generated-artifact, recording-file, credential-pattern, and exact-diff audits
+
+## Verification Results
+
+- Focused project and behavior source contracts passed with writer startup
+  ordered before `SCStream` construction and retained failure cleanup.
+- The repository and external-directory `make check` passed; Linux truthfully
+  reported the static-only boundary because `xcodebuild` is unavailable.
+- Six hostile writer startup mutations were rejected across the throwing
+  signature, writer error propagation, startup ordering, cleanup, documentation,
+  and completed-plan status.
+- Final generated-artifact, recording-file, and credential-pattern audits passed
+  with only the intended capture, recorder, checker, documentation, and plan
+  changes.
+- Hosted unsigned macOS compilation remains required on the exact pushed head.

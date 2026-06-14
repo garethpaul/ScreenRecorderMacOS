@@ -82,6 +82,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   metering and reset the visible timer.
 - Static behavior checks also require capture setup failures to cancel the
   movie writer and remove its unfinished file.
+- A writer startup failure propagates before ScreenCaptureKit starts, so the app
+  cannot advertise an active recording without a destination writer.
 - Static behavior checks require recording finalization to return only
   completed movie URLs, remove failed partial files, and skip recording-history
   persistence when no completed URL exists.
@@ -150,6 +152,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   output contract.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for the
   caller-resistant, location-independent capture verification root.
+- See `docs/plans/2026-06-14-writer-start-failure-propagation.md` for the
+  fail-closed movie-writer startup boundary.
 
 ## Contributing
 

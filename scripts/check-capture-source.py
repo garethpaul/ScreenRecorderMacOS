@@ -16,6 +16,7 @@ RECORDING_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-12-recording-finalization-in
 AWAITED_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-13-awaited-recording-finalization.md"
 AUDIO_FORWARDING_PLAN = DOCS_PLANS / "2026-06-13-audio-sample-forwarding.md"
 MAKE_ROOT_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
+WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-writer-start-failure-propagation.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -38,6 +39,7 @@ def require_paths():
         "CaptureSample/ContentView.swift",
         "CaptureSample/Record.swift",
         "CaptureSample/PlayerViewer.swift",
+        str(WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -185,6 +187,8 @@ def project_checks():
             errors.append(f"{docs_file} must document awaited recording finalization")
         if "audio sample forwarding" not in document.lower():
             errors.append(f"{docs_file} must document audio sample forwarding")
+        if "writer startup failure" not in document.lower():
+            errors.append(f"{docs_file} must document writer startup failure propagation")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -319,6 +323,31 @@ def behavior_checks():
         errors.append("CaptureEngine must not force unwrap the recorder during handoff")
     if "streamOutput.movie = movie" not in capture_engine or "self.movie = movie" not in capture_engine:
         errors.append("CaptureEngine and stream output must share the caller-provided recorder")
+    if "enum MovieRecorderError: Error" not in record or "case documentDirectoryUnavailable" not in record:
+        errors.append("MovieRecorder must define an explicit output-directory startup error")
+    if "func startRecording(height: Int, width: Int) throws" not in record:
+        errors.append("MovieRecorder.startRecording must propagate writer startup failures")
+    if "throw MovieRecorderError.documentDirectoryUnavailable" not in record:
+        errors.append("MovieRecorder must propagate missing output-directory failures")
+    if "let assetWriter = try AVAssetWriter(url: outputFileURL, fileType: .mov)" not in record:
+        errors.append("MovieRecorder must propagate AVAssetWriter creation failures")
+    writer_start = capture_engine.find("try self.movie.startRecording(")
+    stream_start = capture_engine.find("stream = SCStream(")
+    failure_cleanup = capture_engine.find("self.movie.cancelRecording()")
+    if min(writer_start, stream_start, failure_cleanup) < 0 or not writer_start < stream_start < failure_cleanup:
+        errors.append("CaptureEngine must start the writer before SCStream and retain failure cleanup")
+    if WRITER_START_FAILURE_PLAN.exists():
+        writer_plan = WRITER_START_FAILURE_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "hostile writer startup mutations were rejected",
+            "generated-artifact, recording-file, and credential-pattern audits passed",
+        ):
+            if evidence not in writer_plan:
+                errors.append(
+                    f"{WRITER_START_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")
     if "Text(screenRecorder.timerString)" not in capture_app:

@@ -54,9 +54,9 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             streamOutput.pcmBufferHandler = { self.powerMeter.process(buffer: $0) }
             self.movie = movie
             self.startTime = Date()
-            self.movie.startRecording(height: Int(configuration.height), width: Int(configuration.width))
 
             do {
+                try self.movie.startRecording(height: Int(configuration.height), width: Int(configuration.width))
                 stream = SCStream(filter: filter, configuration: configuration, delegate: streamOutput)
 
                 // Add a stream output to capture screen content.
