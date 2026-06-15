@@ -18,6 +18,7 @@ AUDIO_FORWARDING_PLAN = DOCS_PLANS / "2026-06-13-audio-sample-forwarding.md"
 MAKE_ROOT_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-writer-start-failure-propagation.md"
 RUNTIME_WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-runtime-writer-start-failure.md"
+VIDEO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-video-append-failure-propagation.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -42,6 +43,7 @@ def require_paths():
         "CaptureSample/PlayerViewer.swift",
         str(WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
         str(RUNTIME_WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
+        str(VIDEO_APPEND_FAILURE_PLAN.relative_to(ROOT)),
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -193,6 +195,8 @@ def project_checks():
             errors.append(f"{docs_file} must document writer startup failure propagation")
         if "runtime writer start failure" not in document.lower():
             errors.append(f"{docs_file} must document runtime writer start failure containment")
+        if "video sample append failure" not in document.lower():
+            errors.append(f"{docs_file} must document video sample append failure propagation")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -344,6 +348,13 @@ def behavior_checks():
         if fragment not in record:
             errors.append(f"MovieRecorder must propagate runtime writer start failures via {fragment!r}")
     for fragment in (
+        "case assetWriterAppendFailed",
+        "guard input.append(sampleBuffer) else {",
+        "throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed",
+    ):
+        if fragment not in record:
+            errors.append(f"MovieRecorder must propagate video sample append failures via {fragment!r}")
+    for fragment in (
         "streamOutput.recordingErrorHandler = { [weak self] error in",
         "self?.failCapture(error)",
         "private func failCapture(_ error: Error)",
@@ -384,6 +395,18 @@ def behavior_checks():
             if evidence not in runtime_writer_plan:
                 errors.append(
                     f"{RUNTIME_WRITER_START_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+    if VIDEO_APPEND_FAILURE_PLAN.exists():
+        append_failure_plan = VIDEO_APPEND_FAILURE_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "hostile video append mutations were rejected",
+            "generated-artifact, recording-file, and credential-pattern audits passed",
+        ):
+            if evidence not in append_failure_plan:
+                errors.append(
+                    f"{VIDEO_APPEND_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
                 )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")

@@ -86,6 +86,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   cannot advertise an active recording without a destination writer.
 - A runtime writer start failure on the first video frame cancels partial output,
   fails the frame stream, and stops the retained ScreenCaptureKit stream.
+- A video sample append failure follows the same cleanup path instead of
+  allowing capture to continue with a failed movie writer.
 - Static behavior checks require recording finalization to return only
   completed movie URLs, remove failed partial files, and skip recording-history
   persistence when no completed URL exists.

@@ -27,6 +27,7 @@ Priority:
 - Clean up audio metering and timer state when recording start fails
 - Propagate writer startup failure before ScreenCaptureKit enters capture
 - Stop active capture when a runtime writer start failure rejects the first frame
+- Propagate video sample append failure through the existing recording cleanup path
 - Remove unfinished movie files when capture setup fails
 - Persist recording history only after successful movie finalization and remove
   failed partial outputs

@@ -1,6 +1,6 @@
 # Video Append Failure Propagation
 
-## Status: In Progress
+## Status: Completed
 
 ## Context
 
@@ -50,3 +50,22 @@ runtime writer failure boundary.
   completed-plan mutations
 - workflow YAML, plist, scheme XML, Python artifact, recording artifact,
   credential-pattern, and exact-diff audits
+
+## Verification Results
+
+- Focused behavior and project source-contract validation passed.
+- The repository and external-directory `make check` passed; Linux truthfully
+  used the documented static-only path because `xcodebuild` is unavailable.
+- Six hostile video append mutations were rejected across fallback error,
+  append-result handling, error handoff, documentation, plan status, and
+  completed evidence.
+- The generated-artifact, recording-file, and credential-pattern audits passed,
+  along with workflow YAML, entitlements plist, shared scheme XML,
+  conflict-marker, and exact-diff checks.
+
+## Remaining Risks
+
+- Permission-capable ScreenCaptureKit and AVAssetWriter append failure behavior
+  still requires end-to-end macOS runtime validation.
+- Hosted unsigned compilation proves source compatibility but does not grant
+  screen-recording permission or exercise a live movie writer failure.

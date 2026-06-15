@@ -43,6 +43,8 @@ Helpful reports include:
   writerless recording state is exposed.
 - A runtime writer start failure must cancel partial output and stop the active
   capture stream instead of leaving a writerless recording running.
+- A video sample append failure must propagate through the same cleanup boundary
+  instead of allowing capture to continue after the writer rejects a frame.
 - Recording finalization persists history only after the asset writer reports
   completion; failed partial files are removed without logging their URLs.
 - Awaited recording finalization keeps stop completion and idle-state publication

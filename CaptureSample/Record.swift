@@ -6,6 +6,7 @@ import AVFoundation
 enum MovieRecorderError: Error {
     case documentDirectoryUnavailable
     case assetWriterStartFailed
+    case assetWriterAppendFailed
 }
 
 class MovieRecorder {
@@ -130,7 +131,9 @@ class MovieRecorder {
         } else if assetWriter.status == .writing {
             if let input = assetWriterVideoInput,
                 input.isReadyForMoreMediaData {
-                input.append(sampleBuffer)
+                guard input.append(sampleBuffer) else {
+                    throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
+                }
             }
         }
     }

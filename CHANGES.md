@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-15
+
+- Propagated video sample append failure through partial-file cleanup and
+  capture-stream shutdown.
+
 ## 2026-06-14
 
 - Propagated runtime writer start failure from the first video frame through
