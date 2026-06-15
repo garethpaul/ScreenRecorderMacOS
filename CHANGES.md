@@ -2,6 +2,7 @@
 
 ## 2026-06-15
 
+- Video and audio sample append failures propagate through the shared recording cleanup path.
 - Propagated video sample append failure through partial-file cleanup and
   capture-stream shutdown.
 

@@ -19,6 +19,7 @@ MAKE_ROOT_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-writer-start-failure-propagation.md"
 RUNTIME_WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-runtime-writer-start-failure.md"
 VIDEO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-video-append-failure-propagation.md"
+AUDIO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-audio-append-failure-propagation.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -44,6 +45,7 @@ def require_paths():
         str(WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
         str(RUNTIME_WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
         str(VIDEO_APPEND_FAILURE_PLAN.relative_to(ROOT)),
+        str(AUDIO_APPEND_FAILURE_PLAN.relative_to(ROOT)),
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -197,6 +199,9 @@ def project_checks():
             errors.append(f"{docs_file} must document runtime writer start failure containment")
         if "video sample append failure" not in document.lower():
             errors.append(f"{docs_file} must document video sample append failure propagation")
+    for docs_file in ("AGENTS.md", "README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
+        if "Video and audio sample append failures propagate through the shared recording cleanup path." not in read_text(docs_file):
+            errors.append(f"{docs_file} must document shared video/audio append failure cleanup")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -243,13 +248,16 @@ def behavior_checks():
         required_audio_flow = (
             "guard let samples = createPCMBuffer(for: sampleBuffer) else { return }",
             "pcmBufferHandler?(samples)",
-            "movie?.recordAudio(sampleBuffer: sampleBuffer)",
+            "try movie?.recordAudio(sampleBuffer: sampleBuffer)",
+            "recordingErrorHandler?(error)",
         )
         positions = [audio_body.find(fragment) for fragment in required_audio_flow]
         if any(position < 0 for position in positions) or positions != sorted(positions):
             errors.append("CaptureEngine audio output must convert, meter, and forward the accepted sample in order")
-        if audio_body.count("movie?.recordAudio(sampleBuffer: sampleBuffer)") != 1:
+        if audio_body.count("try movie?.recordAudio(sampleBuffer: sampleBuffer)") != 1:
             errors.append("CaptureEngine audio output must forward each accepted sample exactly once")
+        if "do {" not in audio_body or "} catch {" not in audio_body:
+            errors.append("CaptureEngine audio output must route recorder failures through the shared handler")
     for key in ("X", "Y", "Width", "Height"):
         if f'contentRectValues["{key}"]' not in capture_engine:
             errors.append(f"CaptureEngine must validate the content rectangle {key} value")
@@ -354,6 +362,21 @@ def behavior_checks():
     ):
         if fragment not in record:
             errors.append(f"MovieRecorder must propagate video sample append failures via {fragment!r}")
+    audio_record = re.search(
+        r"func recordAudio\(sampleBuffer: CMSampleBuffer\) throws \{(.*?)\n    \}",
+        record,
+        re.DOTALL,
+    )
+    if not audio_record:
+        errors.append("MovieRecorder.recordAudio must remain a throwing method")
+    else:
+        audio_record_body = audio_record.group(1)
+        for fragment in (
+            "guard input.append(sampleBuffer) else {",
+            "throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed",
+        ):
+            if fragment not in audio_record_body:
+                errors.append(f"MovieRecorder.recordAudio must propagate append failure via {fragment!r}")
     for fragment in (
         "streamOutput.recordingErrorHandler = { [weak self] error in",
         "self?.failCapture(error)",
@@ -407,6 +430,18 @@ def behavior_checks():
             if evidence not in append_failure_plan:
                 errors.append(
                     f"{VIDEO_APPEND_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+    if AUDIO_APPEND_FAILURE_PLAN.exists():
+        audio_append_plan = AUDIO_APPEND_FAILURE_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "hostile audio append mutations were rejected",
+            "generated-artifact, recording-file, and credential-pattern audits passed",
+        ):
+            if evidence not in audio_append_plan:
+                errors.append(
+                    f"{AUDIO_APPEND_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
                 )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")

@@ -88,6 +88,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   fails the frame stream, and stops the retained ScreenCaptureKit stream.
 - A video sample append failure follows the same cleanup path instead of
   allowing capture to continue with a failed movie writer.
+- Video and audio sample append failures propagate through the shared recording cleanup path.
 - Static behavior checks require recording finalization to return only
   completed movie URLs, remove failed partial files, and skip recording-history
   persistence when no completed URL exists.

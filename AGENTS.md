@@ -52,6 +52,7 @@ built with ScreenCaptureKit.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-screen-recorder-macos-baseline.md` for the canonical capture and recording safety baseline.
+- Video and audio sample append failures propagate through the shared recording cleanup path.
 - See `docs/plans/2026-06-08-local-player-viewer.md` for the local player viewer guard.
 
 ## Agent workflow

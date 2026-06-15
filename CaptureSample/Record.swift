@@ -138,7 +138,7 @@ class MovieRecorder {
         }
     }
 
-    func recordAudio(sampleBuffer: CMSampleBuffer) {
+    func recordAudio(sampleBuffer: CMSampleBuffer) throws {
         guard isRecording,
             let assetWriter = assetWriter,
             assetWriter.status == .writing,
@@ -147,6 +147,8 @@ class MovieRecorder {
                 return
         }
 
-        input.append(sampleBuffer)
+        guard input.append(sampleBuffer) else {
+            throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
+        }
     }
 }

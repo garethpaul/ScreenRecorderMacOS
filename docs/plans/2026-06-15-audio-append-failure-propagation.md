@@ -1,6 +1,6 @@
 # Audio Append Failure Propagation
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -56,16 +56,17 @@ Files:
 Record that failed video or audio sample appends terminate capture through the
 shared recording error path.
 
-## Verification Plan
+## Verification Completed
 
-- Run `make check` from the repository and an external directory with explicit
-  timeouts.
-- Reject isolated mutations for throwing signature, append result, writer
-  error, fallback error, callback catch, guidance, and completed plan.
-- Audit the exact diff, generated artifacts, changed-line secrets, staged
-  paths, and whitespace before commit.
-- Take one bounded exact-head hosted macOS snapshot after push; do not claim
-  local Xcode compilation on Linux.
+- repository and external-directory `make check` passed with project and
+  behavior contracts; Linux truthfully skipped unavailable `xcodebuild`.
+- Eight hostile audio append mutations were rejected for the throwing
+  signature, append result, writer error, fallback error, callback try/catch,
+  guidance, and completed-plan boundaries.
+- hostile audio append mutations were rejected.
+- generated-artifact, recording-file, and credential-pattern audits passed.
+- Hosted macOS compilation will be captured in one bounded exact-head snapshot
+  after push without polling.
 
 ## Scope Boundaries
 
