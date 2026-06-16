@@ -17,17 +17,11 @@ class MovieRecorder {
 
     private var assetWriterAudioInput: AVAssetWriterInput?
 
-    private var videoTransform: CGAffineTransform
-
-    private var videoSettings: [String: Any]
-
-    private var audioSettings: [String: Any]
+    private let videoTransform: CGAffineTransform
 
     private(set) var isRecording = false
 
-    init(audioSettings: [String: Any], videoSettings: [String: Any], videoTransform: CGAffineTransform) {
-        self.audioSettings = audioSettings
-        self.videoSettings = videoSettings
+    init(videoTransform: CGAffineTransform) {
         self.videoTransform = videoTransform
     }
 

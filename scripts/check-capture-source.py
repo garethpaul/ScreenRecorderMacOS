@@ -20,6 +20,7 @@ WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-writer-start-failure-propag
 RUNTIME_WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-runtime-writer-start-failure.md"
 VIDEO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-video-append-failure-propagation.md"
 AUDIO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-audio-append-failure-propagation.md"
+RECORDER_SETTINGS_PLAN = DOCS_PLANS / "2026-06-16-recorder-settings-contract.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -46,6 +47,7 @@ def require_paths():
         str(RUNTIME_WRITER_START_FAILURE_PLAN.relative_to(ROOT)),
         str(VIDEO_APPEND_FAILURE_PLAN.relative_to(ROOT)),
         str(AUDIO_APPEND_FAILURE_PLAN.relative_to(ROOT)),
+        str(RECORDER_SETTINGS_PLAN.relative_to(ROOT)),
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -202,6 +204,14 @@ def project_checks():
     for docs_file in ("AGENTS.md", "README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
         if "Video and audio sample append failures propagate through the shared recording cleanup path." not in read_text(docs_file):
             errors.append(f"{docs_file} must document shared video/audio append failure cleanup")
+        document = " ".join(read_text(docs_file).split())
+        if (
+            "MovieRecorder" not in document
+            or "video transform" not in document
+            or "fixed audio and video output settings" not in document
+            or "startRecording" not in document
+        ):
+            errors.append(f"{docs_file} must document the recorder settings contract")
 
     entitlements = read_text("CaptureSample/CaptureSample.entitlements")
     if "<plist version=\"1.0\">" not in entitlements:
@@ -223,6 +233,38 @@ def behavior_checks():
     player_viewer = read_text("CaptureSample/PlayerViewer.swift")
     persistence_controller = read_text("CaptureSample/PersistenceController.swift")
     menu_view = read_text("CaptureSample/Views/MenuView.swift")
+    swift_source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((ROOT / "CaptureSample").rglob("*.swift"))
+    )
+
+    if "init(videoTransform: CGAffineTransform)" not in record:
+        errors.append("MovieRecorder must expose only the video transform at initialization")
+    if "private let videoTransform: CGAffineTransform" not in record:
+        errors.append("MovieRecorder must keep its initializer-only video transform immutable")
+    for ignored_fragment in (
+        "init(audioSettings:",
+        "private var audioSettings",
+        "private var videoSettings",
+        "MovieRecorder(audioSettings:",
+        "MovieRecorder(videoSettings:",
+    ):
+        if ignored_fragment in swift_source:
+            errors.append(f"MovieRecorder must not retain ignored settings fragment {ignored_fragment!r}")
+    initializer_call = "MovieRecorder(videoTransform: .identity)"
+    if swift_source.count(initializer_call) != 2:
+        errors.append("both recorder call sites must use the truthful video-transform initializer")
+    for fixed_setting in (
+        "AVFormatIDKey: kAudioFormatLinearPCM",
+        "AVSampleRateKey: 44100",
+        "AVNumberOfChannelsKey: 2",
+        "AVLinearPCMBitDepthKey: 16",
+        "AVVideoCodecKey: AVVideoCodecType.h264",
+        "AVVideoWidthKey: width",
+        "AVVideoHeightKey: height",
+    ):
+        if fixed_setting not in record:
+            errors.append(f"MovieRecorder must retain fixed writer setting {fixed_setting!r}")
 
     if "import ScreenCaptureKit" not in capture_engine:
         errors.append("CaptureEngine.swift must import ScreenCaptureKit")
@@ -442,6 +484,18 @@ def behavior_checks():
             if evidence not in audio_append_plan:
                 errors.append(
                     f"{AUDIO_APPEND_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+    if RECORDER_SETTINGS_PLAN.exists():
+        settings_plan = RECORDER_SETTINGS_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "hostile recorder settings mutations were rejected",
+            "generated-artifact, recording-file, and credential-pattern audits passed",
+        ):
+            if evidence not in settings_plan:
+                errors.append(
+                    f"{RECORDER_SETTINGS_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
                 )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")

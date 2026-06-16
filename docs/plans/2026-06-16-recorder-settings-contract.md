@@ -1,6 +1,6 @@
 # Recorder Settings Contract
 
-Status: In Progress
+Status: Completed
 
 ## Problem
 
@@ -80,3 +80,14 @@ than accepted and silently ignored at initialization.
   execution on Linux.
 - PR #12 will be stacked on open PR #11; neither pull request may be merged or
   closed without explicit authorization.
+
+## Verification Completed
+
+- The pre-change source inspection found ignored audio/video settings
+  properties, shadowing local dictionaries, and two empty-dictionary call sites.
+- repository and external-directory `make check` passed with project and
+  behavior contracts; Linux truthfully skipped unavailable `xcodebuild`.
+- hostile recorder settings mutations were rejected.
+- generated-artifact, recording-file, and credential-pattern audits passed.
+- No local Xcode build, ScreenCaptureKit capture, audio device, movie playback,
+  credentials, or deployment was exercised.

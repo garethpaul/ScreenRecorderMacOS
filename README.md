@@ -10,6 +10,9 @@ built with ScreenCaptureKit.
 
 This README is based on the checked-in source, manifests, scripts, and repository metadata on the `main` branch. The project language mix found during review was: Swift (16).
 
+MovieRecorder exposes only its video transform at initialization; fixed audio
+and video output settings remain inside startRecording.
+
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes

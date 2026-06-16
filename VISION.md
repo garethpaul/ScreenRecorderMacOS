@@ -15,6 +15,8 @@ The current focus is:
 
 Priority:
 
+- MovieRecorder exposes only its video transform at initialization; fixed audio
+  and video output settings remain inside startRecording.
 - Preserve the ScreenCaptureKit display/window capture flow
 - Keep recording permission checks visible
 - Store recordings and metadata in documented local locations

@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-16
+
+- MovieRecorder exposes only its video transform at initialization; fixed audio
+  and video output settings remain inside startRecording.
+
 ## 2026-06-15
 
 - Video and audio sample append failures propagate through the shared recording cleanup path.

@@ -4,6 +4,9 @@
 
 The supported security scope for `ScreenRecorderMacOS` is the current default branch, `main`. Older commits, tags, branches, forks, demos, and generated artifacts are not actively supported unless the repository explicitly marks them as maintained.
 
+MovieRecorder exposes only its video transform at initialization; fixed audio
+and video output settings remain inside startRecording.
+
 Project summary: Screen Recording for MacOS
 
 ## Reporting a Vulnerability

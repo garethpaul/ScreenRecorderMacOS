@@ -26,7 +26,7 @@ struct CapturedFrame {
 class CaptureEngine: NSObject, @unchecked Sendable {
     
     private let logger = Logger()
-    var movie: MovieRecorder = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
+    var movie: MovieRecorder = MovieRecorder(videoTransform: .identity)
 
 
 

@@ -28,7 +28,7 @@ class ScreenRecorder: ObservableObject {
     }
     
     private let logger = Logger()
-    private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
+    private let movie = MovieRecorder(videoTransform: .identity)
 
 
     @Published var isTimerRunning = false
