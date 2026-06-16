@@ -106,7 +106,9 @@ struct ContentView: View {
         .onAppear {
             Task {
                 if await screenRecorder.canRecord {
-                    await screenRecorder.start()
+                    if !userStopped {
+                        await screenRecorder.start()
+                    }
                 } else {
                     isUnauthorized = true
                     disableInput = true

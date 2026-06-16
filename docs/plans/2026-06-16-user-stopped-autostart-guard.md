@@ -1,6 +1,6 @@
 # Preserve Explicit Stop Intent On App Appearance
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -38,3 +38,11 @@ persisted stop intent.
 - Record the Linux `xcodebuild` limitation without weakening static checks.
 - Audit the exact diff, generated artifacts, recording files, credential
   patterns, conflict markers, binaries, modes, and large files.
+
+## Verification Completed
+
+- The pre-fix source was rejected and four persisted-stop mutations were rejected.
+- The repository and external-directory `make check` passed all portable
+  project and behavior contracts; `xcodebuild` remained unavailable on Linux
+  and was reported truthfully.
+- Python syntax, exact-diff, generated-artifact, recording-file, and credential-pattern audits passed.

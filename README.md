@@ -97,6 +97,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   persistence when no completed URL exists.
 - Static behavior checks require awaited recording finalization so the recorder
   does not publish idle state before movie validation and persistence finish.
+- Authorized view appearance honors persisted explicit-stop intent before
+  automatically starting screen capture.
 - Static behavior checks preserve audio sample forwarding from accepted
   ScreenCaptureKit buffers to both live metering and the movie recorder.
 - Static behavior checks require the capture engine and stream output recorder
@@ -156,6 +158,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   free recorder handoff contract.
 - See `docs/plans/2026-06-13-awaited-recording-finalization.md` for the awaited
   recording finalization and persistence boundary.
+- See `docs/plans/2026-06-16-user-stopped-autostart-guard.md` for the persisted
+  explicit-stop auto-start boundary.
 - See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
   output contract.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for the

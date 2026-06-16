@@ -10,6 +10,7 @@ lint:
 
 test:
 	$(PYTHON) "$(ROOT)/scripts/check-capture-source.py" --mode behavior
+	$(PYTHON) "$(ROOT)/scripts/test_user_stopped_autostart_contract.py"
 
 build: lint
 	@if command -v "$(XCODEBUILD)" >/dev/null 2>&1; then \

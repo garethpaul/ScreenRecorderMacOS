@@ -57,6 +57,8 @@ Helpful reports include:
   metering and movie-writer paths without adding a new capture source.
 - The capture engine and stream output use the caller-provided recorder handoff
   directly, avoiding a force unwrap in the recording startup path.
+- Authorized view appearance preserves persisted explicit-stop intent instead
+  of silently resuming screen capture.
 
 ## Mobile Privacy Notes
 
