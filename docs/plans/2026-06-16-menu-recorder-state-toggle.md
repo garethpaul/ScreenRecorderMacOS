@@ -1,6 +1,6 @@
 # Toggle Recording From Actual Recorder State
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -32,4 +32,13 @@ and requires a second click to restart.
 
 ## Verification
 
-- Pending implementation and portable validation.
+- The focused contract passed and six recorder-state mutations were rejected:
+  persisted intent choosing the operation, inverted stop intent, late stop
+  intent, inverted start intent, late start intent, and duplicate start.
+- The existing four persisted-stop autostart mutations remained rejected.
+- The repository and external-directory `make check` passed all portable
+  project and behavior contracts; `xcodebuild` remained unavailable on Linux
+  and was reported without weakening the static or hosted build boundary.
+- Exact diff, generated-artifact, recording-file, and credential-pattern audits passed.
+- No ScreenCaptureKit permission prompt, live capture, recording, playback, or
+  native macOS interaction was exercised locally.

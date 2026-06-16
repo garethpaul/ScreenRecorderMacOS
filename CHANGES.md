@@ -2,6 +2,8 @@
 
 ## 2026-06-16
 
+- Made the menu recording toggle follow actual recorder state and persist stop
+  intent before asynchronous start or stop work.
 - MovieRecorder exposes only its video transform at initialization; fixed audio
   and video output settings remain inside startRecording.
 - Preserved explicit user-stop intent when an authorized content view appears.

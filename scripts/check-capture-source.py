@@ -4,7 +4,8 @@ import re
 import sys
 from pathlib import Path
 
-from user_stopped_autostart_contract import validation_errors
+from menu_recorder_state_contract import validation_errors as menu_state_errors
+from user_stopped_autostart_contract import validation_errors as autostart_errors
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +25,7 @@ VIDEO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-video-append-failure-propag
 AUDIO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-audio-append-failure-propagation.md"
 RECORDER_SETTINGS_PLAN = DOCS_PLANS / "2026-06-16-recorder-settings-contract.md"
 USER_STOPPED_AUTOSTART_PLAN = DOCS_PLANS / "2026-06-16-user-stopped-autostart-guard.md"
+MENU_RECORDER_STATE_PLAN = DOCS_PLANS / "2026-06-16-menu-recorder-state-toggle.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -52,6 +54,7 @@ def require_paths():
         str(AUDIO_APPEND_FAILURE_PLAN.relative_to(ROOT)),
         str(RECORDER_SETTINGS_PLAN.relative_to(ROOT)),
         str(USER_STOPPED_AUTOSTART_PLAN.relative_to(ROOT)),
+        str(MENU_RECORDER_STATE_PLAN.relative_to(ROOT)),
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -233,11 +236,12 @@ def behavior_checks():
     screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
     capture_app = read_text("CaptureSample/CaptureSampleApp.swift")
     content_view = read_text("CaptureSample/ContentView.swift")
-    errors.extend(validation_errors(content_view))
+    errors.extend(autostart_errors(content_view))
     record = read_text("CaptureSample/Record.swift")
     player_viewer = read_text("CaptureSample/PlayerViewer.swift")
     persistence_controller = read_text("CaptureSample/PersistenceController.swift")
     menu_view = read_text("CaptureSample/Views/MenuView.swift")
+    errors.extend(menu_state_errors(menu_view))
     swift_source = "\n".join(
         path.read_text(encoding="utf-8")
         for path in sorted((ROOT / "CaptureSample").rglob("*.swift"))
@@ -513,6 +517,18 @@ def behavior_checks():
             if evidence not in autostart_plan:
                 errors.append(
                     f"{USER_STOPPED_AUTOSTART_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+    if MENU_RECORDER_STATE_PLAN.exists():
+        menu_state_plan = MENU_RECORDER_STATE_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "six recorder-state mutations were rejected",
+            "generated-artifact, recording-file, and credential-pattern audits passed",
+        ):
+            if evidence not in menu_state_plan:
+                errors.append(
+                    f"{MENU_RECORDER_STATE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
                 )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")

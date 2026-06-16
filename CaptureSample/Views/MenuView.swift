@@ -23,16 +23,16 @@ struct MenuView: View {
                 HStack{
                     Spacer()
                     Button{
-                        if userStopped {
-                            Task {
-                                await screenRecorder.start()
-                            }
-                            self.userStopped = false
-                        } else {
+                        if screenRecorder.isRunning {
+                            self.userStopped = true
                             Task {
                                 await screenRecorder.stop()
                             }
-                            self.userStopped = true
+                        } else {
+                            self.userStopped = false
+                            Task {
+                                await screenRecorder.start()
+                            }
                         }
                     } label: {
                         VStack(alignment: .center){

@@ -99,6 +99,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   does not publish idle state before movie validation and persistence finish.
 - Authorized view appearance honors persisted explicit-stop intent before
   automatically starting screen capture.
+- The menu recording button chooses start or stop from live recorder state and
+  persists the matching intent before asynchronous work begins.
 - Static behavior checks preserve audio sample forwarding from accepted
   ScreenCaptureKit buffers to both live metering and the movie recorder.
 - Static behavior checks require the capture engine and stream output recorder
@@ -160,6 +162,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   recording finalization and persistence boundary.
 - See `docs/plans/2026-06-16-user-stopped-autostart-guard.md` for the persisted
   explicit-stop auto-start boundary.
+- See `docs/plans/2026-06-16-menu-recorder-state-toggle.md` for the state-driven
+  menu start/stop and persisted-intent ordering contract.
 - See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
   output contract.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for the
