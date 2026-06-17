@@ -48,7 +48,7 @@ class CaptureEngine: NSObject, @unchecked Sendable {
         AsyncThrowingStream<CapturedFrame, Error> { continuation in
             self.continuation = continuation
             // The stream output object.
-            let streamOutput = CaptureEngineStreamOutput(continuation: continuation)
+            let streamOutput = CaptureEngineStreamOutput()
             streamOutput.movie = movie
             streamOutput.capturedFrameHandler = { continuation.yield($0) }
             streamOutput.pcmBufferHandler = { self.powerMeter.process(buffer: $0) }
@@ -134,13 +134,6 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
     var pcmBufferHandler: ((AVAudioPCMBuffer) -> Void)?
     var capturedFrameHandler: ((CapturedFrame) -> Void)?
     var recordingErrorHandler: ((Error) -> Void)?
-
-    // Store the the startCapture continuation, so you can cancel it if an error occurs.
-    private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
-
-    init(continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?) {
-        self.continuation = continuation
-    }
 
     /// - Tag: DidOutputSampleBuffer
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
@@ -231,6 +224,6 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
     }
 
     func stream(_ stream: SCStream, didStopWithError error: Error) {
-        continuation?.finish(throwing: error)
+        recordingErrorHandler?(error)
     }
 }

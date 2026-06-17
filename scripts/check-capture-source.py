@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from menu_recorder_state_contract import validation_errors as menu_state_errors
+from stream_delegate_failure_contract import validation_errors as stream_delegate_errors
 from user_stopped_autostart_contract import validation_errors as autostart_errors
 
 
@@ -26,6 +27,7 @@ AUDIO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-audio-append-failure-propag
 RECORDER_SETTINGS_PLAN = DOCS_PLANS / "2026-06-16-recorder-settings-contract.md"
 USER_STOPPED_AUTOSTART_PLAN = DOCS_PLANS / "2026-06-16-user-stopped-autostart-guard.md"
 MENU_RECORDER_STATE_PLAN = DOCS_PLANS / "2026-06-16-menu-recorder-state-toggle.md"
+STREAM_DELEGATE_FAILURE_PLAN = DOCS_PLANS / "2026-06-17-stream-delegate-failure-cleanup.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -55,6 +57,7 @@ def require_paths():
         str(RECORDER_SETTINGS_PLAN.relative_to(ROOT)),
         str(USER_STOPPED_AUTOSTART_PLAN.relative_to(ROOT)),
         str(MENU_RECORDER_STATE_PLAN.relative_to(ROOT)),
+        str(STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)),
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -170,6 +173,7 @@ def project_checks():
     for fragment in (
         root_declaration,
         '$(PYTHON) "$(ROOT)/scripts/check-capture-source.py" --mode project',
+        '$(PYTHON) "$(ROOT)/scripts/test_stream_delegate_failure_contract.py"',
         'cd "$(ROOT)" && "$(XCODEBUILD)" -project ScreenRecorder.xcodeproj',
         "CODE_SIGNING_ALLOWED=NO build",
     ):
@@ -209,9 +213,12 @@ def project_checks():
         if "video sample append failure" not in document.lower():
             errors.append(f"{docs_file} must document video sample append failure propagation")
     for docs_file in ("AGENTS.md", "README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
-        if "Video and audio sample append failures propagate through the shared recording cleanup path." not in read_text(docs_file):
+        raw_document = read_text(docs_file)
+        if "Video and audio sample append failures propagate through the shared recording cleanup path." not in raw_document:
             errors.append(f"{docs_file} must document shared video/audio append failure cleanup")
-        document = " ".join(read_text(docs_file).split())
+        document = " ".join(raw_document.split())
+        if "Unexpected ScreenCaptureKit delegate stops propagate through the shared recording cleanup path" not in document:
+            errors.append(f"{docs_file} must document stream delegate failure cleanup")
         if (
             "MovieRecorder" not in document
             or "video transform" not in document
@@ -233,6 +240,7 @@ def behavior_checks():
         return errors
 
     capture_engine = read_text("CaptureSample/CaptureEngine.swift")
+    errors.extend(stream_delegate_errors(capture_engine))
     screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
     capture_app = read_text("CaptureSample/CaptureSampleApp.swift")
     content_view = read_text("CaptureSample/ContentView.swift")
@@ -530,6 +538,22 @@ def behavior_checks():
                 errors.append(
                     f"{MENU_RECORDER_STATE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
                 )
+    if STREAM_DELEGATE_FAILURE_PLAN.exists():
+        stream_delegate_plan = STREAM_DELEGATE_FAILURE_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "six stream-delegate mutations were rejected",
+            "generated-artifact, recording-file, and credential-pattern audits passed",
+        ):
+            if evidence not in stream_delegate_plan:
+                errors.append(
+                    f"{STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+        if str(STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)) not in read_text("README.md"):
+            errors.append(
+                f"README.md must reference {STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)}"
+            )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")
     if "Text(screenRecorder.timerString)" not in capture_app:

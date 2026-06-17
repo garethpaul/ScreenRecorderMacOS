@@ -6,7 +6,7 @@ date: 2026-06-17
 
 # Route Stream Delegate Failures Through Recording Cleanup
 
-Status: In Progress
+Status: Completed
 
 ## Context
 
@@ -71,6 +71,13 @@ stop.
 
 ## Verification
 
-- Planned: focused delegate-failure contract and hostile mutations.
-- Planned: repository and external-directory `make check` on Linux.
-- Planned: hosted macOS build on the exact pushed head.
+- The focused contract passed and six stream-delegate mutations were rejected:
+  direct continuation completion, swallowed delegate failure, duplicate
+  continuation state, restored continuation initialization, removed shared
+  handler wiring, and duplicate delegate cleanup.
+- The existing persisted-stop and menu-state contracts still rejected all ten
+  of their mutations.
+- The repository and external-directory `make check` passed on Linux; the
+  portable gate completed and reported the expected unavailable `xcodebuild`.
+- Exact-diff, generated-artifact, recording-file, and credential-pattern audits passed.
+- The hosted macOS build remains required on the exact pushed head.

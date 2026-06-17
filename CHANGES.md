@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Unexpected ScreenCaptureKit delegate stops propagate through the shared
+  recording cleanup path so partial movie and stream state is released.
+
 ## 2026-06-16
 
 - Made the menu recording toggle follow actual recorder state and persist stop

@@ -53,6 +53,8 @@ built with ScreenCaptureKit.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-screen-recorder-macos-baseline.md` for the canonical capture and recording safety baseline.
 - Video and audio sample append failures propagate through the shared recording cleanup path.
+- Unexpected ScreenCaptureKit delegate stops propagate through the shared
+  recording cleanup path.
 - MovieRecorder exposes only its video transform at initialization; fixed audio
   and video output settings remain inside startRecording.
 - See `docs/plans/2026-06-08-local-player-viewer.md` for the local player viewer guard.

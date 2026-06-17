@@ -92,6 +92,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - A video sample append failure follows the same cleanup path instead of
   allowing capture to continue with a failed movie writer.
 - Video and audio sample append failures propagate through the shared recording cleanup path.
+- Unexpected ScreenCaptureKit delegate stops propagate through the shared
+  recording cleanup path so partial movies, continuations, and retained streams
+  are not left active.
 - Static behavior checks require recording finalization to return only
   completed movie URLs, remove failed partial files, and skip recording-history
   persistence when no completed URL exists.
@@ -164,6 +167,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   explicit-stop auto-start boundary.
 - See `docs/plans/2026-06-16-menu-recorder-state-toggle.md` for the state-driven
   menu start/stop and persisted-intent ordering contract.
+- See `docs/plans/2026-06-17-stream-delegate-failure-cleanup.md` for unexpected
+  stream-stop routing through shared recording cleanup.
 - See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
   output contract.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for the
