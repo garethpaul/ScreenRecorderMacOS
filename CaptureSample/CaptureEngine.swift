@@ -156,7 +156,7 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
                 recordingErrorHandler?(error)
             }
 
-        case .audio:
+        case .audio, .microphone:
             // Create an AVAudioPCMBuffer from an audio sample buffer.
             guard let samples = createPCMBuffer(for: sampleBuffer) else { return }
             pcmBufferHandler?(samples)

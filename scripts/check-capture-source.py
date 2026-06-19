@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 
 from menu_recorder_state_contract import validation_errors as menu_state_errors
+from movie_recorder_video_start_contract import validation_errors as video_start_errors
+from screen_recorder_start_stop_contract import validation_errors as start_stop_errors
 from stream_delegate_failure_contract import validation_errors as stream_delegate_errors
 from user_stopped_autostart_contract import validation_errors as autostart_errors
 
@@ -58,6 +60,8 @@ def require_paths():
         str(USER_STOPPED_AUTOSTART_PLAN.relative_to(ROOT)),
         str(MENU_RECORDER_STATE_PLAN.relative_to(ROOT)),
         str(STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)),
+        "scripts/test_movie_recorder_video_start_contract.py",
+        "scripts/test_screen_recorder_start_stop_contract.py",
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -173,6 +177,8 @@ def project_checks():
     for fragment in (
         root_declaration,
         '$(PYTHON) "$(ROOT)/scripts/check-capture-source.py" --mode project',
+        '$(PYTHON) "$(ROOT)/scripts/test_movie_recorder_video_start_contract.py"',
+        '$(PYTHON) "$(ROOT)/scripts/test_screen_recorder_start_stop_contract.py"',
         '$(PYTHON) "$(ROOT)/scripts/test_stream_delegate_failure_contract.py"',
         'cd "$(ROOT)" && "$(XCODEBUILD)" -project ScreenRecorder.xcodeproj',
         "CODE_SIGNING_ALLOWED=NO build",
@@ -242,10 +248,12 @@ def behavior_checks():
     capture_engine = read_text("CaptureSample/CaptureEngine.swift")
     errors.extend(stream_delegate_errors(capture_engine))
     screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
+    errors.extend(start_stop_errors(screen_recorder))
     capture_app = read_text("CaptureSample/CaptureSampleApp.swift")
     content_view = read_text("CaptureSample/ContentView.swift")
     errors.extend(autostart_errors(content_view))
     record = read_text("CaptureSample/Record.swift")
+    errors.extend(video_start_errors(record))
     player_viewer = read_text("CaptureSample/PlayerViewer.swift")
     persistence_controller = read_text("CaptureSample/PersistenceController.swift")
     menu_view = read_text("CaptureSample/Views/MenuView.swift")
@@ -299,9 +307,13 @@ def behavior_checks():
         errors.append("CaptureEngine must not force-cast frame metadata dictionaries")
     if 'attachments[.contentRect] as? [String: NSNumber]' not in capture_engine:
         errors.append("CaptureEngine must validate content rectangle metadata as numeric dictionary values")
-    audio_case = re.search(r"case \.audio:(.*?)(?=\n\s*@unknown default:)", capture_engine, re.DOTALL)
+    audio_case = re.search(
+        r"case \.audio, \.microphone:(.*?)(?=\n\s*@unknown default:)",
+        capture_engine,
+        re.DOTALL,
+    )
     if not audio_case:
-        errors.append("CaptureEngine must handle ScreenCaptureKit audio samples")
+        errors.append("CaptureEngine must handle ScreenCaptureKit audio and microphone samples")
     else:
         audio_body = audio_case.group(1)
         required_audio_flow = (

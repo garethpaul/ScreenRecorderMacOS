@@ -9,6 +9,10 @@ enum MovieRecorderError: Error {
     case assetWriterAppendFailed
 }
 
+private struct FinalizingAssetWriter: @unchecked Sendable {
+    let assetWriter: AVAssetWriter
+}
+
 class MovieRecorder {
 
     private var assetWriter: AVAssetWriter?
@@ -85,8 +89,10 @@ class MovieRecorder {
             return nil
         }
 
+        let finalizingWriter = FinalizingAssetWriter(assetWriter: assetWriter)
         return await withCheckedContinuation { continuation in
-            assetWriter.finishWriting {
+            assetWriter.finishWriting { [finalizingWriter] in
+                let assetWriter = finalizingWriter.assetWriter
                 guard assetWriter.status == .completed else {
                     try? FileManager.default.removeItem(at: assetWriter.outputURL)
                     continuation.resume(returning: nil)
@@ -122,13 +128,16 @@ class MovieRecorder {
                 throw assetWriter.error ?? MovieRecorderError.assetWriterStartFailed
             }
             assetWriter.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
-        } else if assetWriter.status == .writing {
-            if let input = assetWriterVideoInput,
-                input.isReadyForMoreMediaData {
-                guard input.append(sampleBuffer) else {
-                    throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
-                }
-            }
+        }
+
+        guard assetWriter.status == .writing,
+            let input = assetWriterVideoInput,
+            input.isReadyForMoreMediaData else {
+                return
+        }
+
+        guard input.append(sampleBuffer) else {
+            throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
         }
     }
 

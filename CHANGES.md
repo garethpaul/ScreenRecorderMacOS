@@ -1,5 +1,14 @@
 # Changes
 
+## 2026-06-19
+
+- Appended the first video sample after starting the asset writer session so
+  recordings do not drop the frame that establishes writer timing.
+- Guarded recorder start and stop tasks against reentrant async calls before
+  capture setup or shutdown awaits can duplicate work.
+- Treated ScreenCaptureKit microphone samples like other audio samples and
+  wrapped writer finalization state for Swift concurrency checking.
+
 ## 2026-06-17
 
 - Unexpected ScreenCaptureKit delegate stops propagate through the shared
