@@ -4,6 +4,9 @@
 
 The supported security scope for `ScreenRecorderMacOS` is the current default branch, `main`. Older commits, tags, branches, forks, demos, and generated artifacts are not actively supported unless the repository explicitly marks them as maintained.
 
+MovieRecorder exposes only its video transform at initialization; fixed audio
+and video output settings remain inside startRecording.
+
 Project summary: Screen Recording for MacOS
 
 ## Reporting a Vulnerability
@@ -34,11 +37,30 @@ Helpful reports include:
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.
 - GitHub Actions runs the static `make check` baseline before review.
 - CI actions stay pinned by commit and run with read-only repository contents
-  permission.
+  permission and without persisted checkout credentials.
 - Hosted Xcode compilation disables code signing and does not receive a
   development team, certificate, capture permission, or recording data.
 - Capture setup failures must cancel unfinished movie writers and remove their
   partial local files without saving recording metadata.
+- A writer startup failure must propagate before ScreenCaptureKit starts so no
+  writerless recording state is exposed.
+- A runtime writer start failure must cancel partial output and stop the active
+  capture stream instead of leaving a writerless recording running.
+- A video sample append failure must propagate through the same cleanup boundary
+  instead of allowing capture to continue after the writer rejects a frame.
+- Video and audio sample append failures propagate through the shared recording cleanup path.
+- Unexpected ScreenCaptureKit delegate stops propagate through the shared
+  recording cleanup path so partial local output is cancelled.
+- Recording finalization persists history only after the asset writer reports
+  completion; failed partial files are removed without logging their URLs.
+- Awaited recording finalization keeps stop completion and idle-state publication
+  behind movie validation and recording-history persistence.
+- Audio sample forwarding keeps accepted ScreenCaptureKit buffers on the local
+  metering and movie-writer paths without adding a new capture source.
+- The capture engine and stream output use the caller-provided recorder handoff
+  directly, avoiding a force unwrap in the recording startup path.
+- Authorized view appearance preserves persisted explicit-stop intent instead
+  of silently resuming screen capture.
 
 ## Mobile Privacy Notes
 

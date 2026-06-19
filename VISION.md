@@ -15,6 +15,8 @@ The current focus is:
 
 Priority:
 
+- MovieRecorder exposes only its video transform at initialization; fixed audio
+  and video output settings remain inside startRecording.
 - Preserve the ScreenCaptureKit display/window capture flow
 - Keep recording permission checks visible
 - Store recordings and metadata in documented local locations
@@ -25,7 +27,19 @@ Priority:
 - Release retained capture streams when stop or start failure completes
 - Keep the menu bar recording timer reset after recording stops
 - Clean up audio metering and timer state when recording start fails
+- Propagate writer startup failure before ScreenCaptureKit enters capture
+- Stop active capture when a runtime writer start failure rejects the first frame
+- Propagate video sample append failure through the existing recording cleanup path
+- Video and audio sample append failures propagate through the shared recording cleanup path.
+- Unexpected ScreenCaptureKit delegate stops propagate through the shared
+  recording cleanup path.
 - Remove unfinished movie files when capture setup fails
+- Persist recording history only after successful movie finalization and remove
+  failed partial outputs
+- Keep awaited recording finalization ahead of recorder idle state
+- Keep persisted explicit-stop intent ahead of authorized appearance auto-start
+- Preserve audio sample forwarding to metering and movie output
+- Keep recorder handoff identity explicit and force-unwrap-free
 - Keep local Xcode signing team choices out of checked-in project metadata
 - Avoid ad hoc stdout debug logging from app Swift sources
 - Keep local persistence failures observable without crashing previews
@@ -45,8 +59,8 @@ Contribution rules:
 - One PR = one focused capture, recording, audio, UI, storage, or documentation change.
 - Do not add background recording without explicit user control.
 - Include manual verification notes for capture changes.
-- Keep `.github/workflows/check.yml` aligned with the static capture baseline
-  until a macOS/Xcode job is documented.
+- Keep `.github/workflows/check.yml` aligned with both the static capture
+  baseline and unsigned hosted macOS build.
 - Keep recording destinations and permissions documented.
 
 ## Security And Responsible Use

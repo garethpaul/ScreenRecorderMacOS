@@ -1,11 +1,63 @@
 # Changes
 
+## 2026-06-19
+
+- Appended the first video sample after starting the asset writer session so
+  recordings do not drop the frame that establishes writer timing.
+- Guarded recorder start and stop tasks against reentrant async calls before
+  capture setup or shutdown awaits can duplicate work.
+- Treated ScreenCaptureKit microphone samples like other audio samples and
+  wrapped writer finalization state for Swift concurrency checking.
+
+## 2026-06-17
+
+- Unexpected ScreenCaptureKit delegate stops propagate through the shared
+  recording cleanup path so partial movie and stream state is released.
+
+## 2026-06-16
+
+- Made the menu recording toggle follow actual recorder state and persist stop
+  intent before asynchronous start or stop work.
+- MovieRecorder exposes only its video transform at initialization; fixed audio
+  and video output settings remain inside startRecording.
+- Preserved explicit user-stop intent when an authorized content view appears.
+
+## 2026-06-15
+
+- Video and audio sample append failures propagate through the shared recording cleanup path.
+- Propagated video sample append failure through partial-file cleanup and
+  capture-stream shutdown.
+
+## 2026-06-14
+
+- Propagated runtime writer start failure from the first video frame through
+  partial-file cleanup and capture-stream shutdown.
+- Propagated movie writer startup failures before constructing or starting the
+  ScreenCaptureKit stream.
+
+## 2026-06-13
+
+- Added audio sample forwarding from accepted ScreenCaptureKit buffers to the
+  movie recorder while preserving live metering.
+- Added awaited recording finalization so capture stop returns only after movie
+  validation and recording-history persistence complete.
+
+## 2026-06-12
+
+- Required completed `AVAssetWriter` finalization before persisting recording
+  history, removed failed partial movies, and cleared recorder input state.
+- Added static contracts and a maintenance plan for the recording finalization
+  boundary.
+- Removed the force unwrap from recorder handoff and added static identity
+  coverage for capture startup.
+
 ## 2026-06-10
 
 - Cancelled movie writers and removed unfinished recording files when capture
   setup fails before streaming begins.
 - Added a least-privilege GitHub Actions check workflow that runs the existing
-  static `make check` baseline with pinned Node 24-compatible actions.
+  static `make check` baseline on all branch pushes, pull requests, and manual
+  dispatches with pinned Node 24-compatible actions.
 - Added a static project guard requiring the CI workflow and completed CI
   baseline plan to remain checked in.
 - Added a real unsigned macOS app build on the fixed `macos-15` hosted runner.

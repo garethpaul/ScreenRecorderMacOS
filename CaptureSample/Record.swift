@@ -3,6 +3,16 @@ import SwiftUI
 import Foundation
 import AVFoundation
 
+enum MovieRecorderError: Error {
+    case documentDirectoryUnavailable
+    case assetWriterStartFailed
+    case assetWriterAppendFailed
+}
+
+private struct FinalizingAssetWriter: @unchecked Sendable {
+    let assetWriter: AVAssetWriter
+}
+
 class MovieRecorder {
 
     private var assetWriter: AVAssetWriter?
@@ -11,17 +21,11 @@ class MovieRecorder {
 
     private var assetWriterAudioInput: AVAssetWriterInput?
 
-    private var videoTransform: CGAffineTransform
-
-    private var videoSettings: [String: Any]
-
-    private var audioSettings: [String: Any]
+    private let videoTransform: CGAffineTransform
 
     private(set) var isRecording = false
 
-    init(audioSettings: [String: Any], videoSettings: [String: Any], videoTransform: CGAffineTransform) {
-        self.audioSettings = audioSettings
-        self.videoSettings = videoSettings
+    init(videoTransform: CGAffineTransform) {
         self.videoTransform = videoTransform
     }
 
@@ -29,17 +33,15 @@ class MovieRecorder {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
     }
 
-    func startRecording(height: Int, width: Int) {
+    func startRecording(height: Int, width: Int) throws {
         // Create an asset writer that records to a temporary file
         let outputFileName = NSUUID().uuidString
         guard let outputFileURL = documentDirectory()?
             .appendingPathComponent(outputFileName)
             .appendingPathExtension("MOV") else {
-            return
+            throw MovieRecorderError.documentDirectoryUnavailable
         }
-        guard let assetWriter = try? AVAssetWriter(url: outputFileURL, fileType: .mov) else {
-            return
-        }
+        let assetWriter = try AVAssetWriter(url: outputFileURL, fileType: .mov)
 
         // Add an audio input
         // Add an audio input
@@ -76,16 +78,28 @@ class MovieRecorder {
         isRecording = true
     }
 
-    func stopRecording(completion: @escaping (URL) -> Void) {
+    func stopRecording() async -> URL? {
+        let assetWriter = self.assetWriter
+        isRecording = false
+        self.assetWriter = nil
+        assetWriterAudioInput = nil
+        assetWriterVideoInput = nil
+
         guard let assetWriter = assetWriter else {
-            return
+            return nil
         }
 
-        self.isRecording = false
-        self.assetWriter = nil
-
-        assetWriter.finishWriting {
-            completion(assetWriter.outputURL)
+        let finalizingWriter = FinalizingAssetWriter(assetWriter: assetWriter)
+        return await withCheckedContinuation { continuation in
+            assetWriter.finishWriting { [finalizingWriter] in
+                let assetWriter = finalizingWriter.assetWriter
+                guard assetWriter.status == .completed else {
+                    try? FileManager.default.removeItem(at: assetWriter.outputURL)
+                    continuation.resume(returning: nil)
+                    return
+                }
+                continuation.resume(returning: assetWriter.outputURL)
+            }
         }
     }
 
@@ -103,24 +117,31 @@ class MovieRecorder {
         try? FileManager.default.removeItem(at: assetWriter.outputURL)
     }
 
-    func recordVideo(sampleBuffer: CMSampleBuffer) {
+    func recordVideo(sampleBuffer: CMSampleBuffer) throws {
         guard isRecording,
             let assetWriter = assetWriter else {
                 return
         }
 
         if assetWriter.status == .unknown {
-            assetWriter.startWriting()
-            assetWriter.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
-        } else if assetWriter.status == .writing {
-            if let input = assetWriterVideoInput,
-                input.isReadyForMoreMediaData {
-                input.append(sampleBuffer)
+            guard assetWriter.startWriting() else {
+                throw assetWriter.error ?? MovieRecorderError.assetWriterStartFailed
             }
+            assetWriter.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
+        }
+
+        guard assetWriter.status == .writing,
+            let input = assetWriterVideoInput,
+            input.isReadyForMoreMediaData else {
+                return
+        }
+
+        guard input.append(sampleBuffer) else {
+            throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
         }
     }
 
-    func recordAudio(sampleBuffer: CMSampleBuffer) {
+    func recordAudio(sampleBuffer: CMSampleBuffer) throws {
         guard isRecording,
             let assetWriter = assetWriter,
             assetWriter.status == .writing,
@@ -129,6 +150,8 @@ class MovieRecorder {
                 return
         }
 
-        input.append(sampleBuffer)
+        guard input.append(sampleBuffer) else {
+            throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
+        }
     }
 }

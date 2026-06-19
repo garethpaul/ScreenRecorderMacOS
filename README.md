@@ -5,9 +5,13 @@
 
 ## Overview
 
-`garethpaul/ScreenRecorderMacOS` is an Apple platform application or Objective-C/Swift sample. Screen Recording for MacOS
+`garethpaul/ScreenRecorderMacOS` is a SwiftUI macOS screen-recording sample
+built with ScreenCaptureKit.
 
 This README is based on the checked-in source, manifests, scripts, and repository metadata on the `main` branch. The project language mix found during review was: Swift (16).
+
+MovieRecorder exposes only its video transform at initialization; fixed audio
+and video output settings remain inside startRecording.
 
 ## Repository Contents
 
@@ -57,8 +61,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   installed, the `build` target also runs the shared Xcode scheme with code
   signing disabled.
 - GitHub Actions runs `make check` through `.github/workflows/check.yml` on
-  pushes, pull requests, and manual dispatches with pinned Node 24-compatible
-  actions, read-only permissions, and a timeout.
+  all branch pushes, pull requests, and manual dispatches with pinned Node
+  24-compatible actions, read-only permissions, disabled checkout credential
+  persistence, and a timeout.
 - A second hosted job performs an unsigned app build on the fixed `macos-15`
   runner, so current Xcode compilation is enforced rather than inferred.
 - Static behavior checks cover capture crash paths, recording file URL
@@ -80,6 +85,29 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   metering and reset the visible timer.
 - Static behavior checks also require capture setup failures to cancel the
   movie writer and remove its unfinished file.
+- A writer startup failure propagates before ScreenCaptureKit starts, so the app
+  cannot advertise an active recording without a destination writer.
+- A runtime writer start failure on the first video frame cancels partial output,
+  fails the frame stream, and stops the retained ScreenCaptureKit stream.
+- A video sample append failure follows the same cleanup path instead of
+  allowing capture to continue with a failed movie writer.
+- Video and audio sample append failures propagate through the shared recording cleanup path.
+- Unexpected ScreenCaptureKit delegate stops propagate through the shared
+  recording cleanup path so partial movies, continuations, and retained streams
+  are not left active.
+- Static behavior checks require recording finalization to return only
+  completed movie URLs, remove failed partial files, and skip recording-history
+  persistence when no completed URL exists.
+- Static behavior checks require awaited recording finalization so the recorder
+  does not publish idle state before movie validation and persistence finish.
+- Authorized view appearance honors persisted explicit-stop intent before
+  automatically starting screen capture.
+- The menu recording button chooses start or stop from live recorder state and
+  persists the matching intent before asynchronous work begins.
+- Static behavior checks preserve audio sample forwarding from accepted
+  ScreenCaptureKit buffers to both live metering and the movie recorder.
+- Static behavior checks require the capture engine and stream output recorder
+  handoff to preserve caller identity without a force unwrap.
 - Static project checks require the Xcode project to leave `DEVELOPMENT_TEAM`
   empty so local signing identity choices stay out of git.
 - Static project checks also require completed canonical plans under `docs/plans`.
@@ -131,6 +159,22 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Xcode build boundary.
 - See `docs/plans/2026-06-10-recording-start-file-cleanup.md` for partial movie
   cleanup when capture setup fails.
+- See `docs/plans/2026-06-12-recorder-handoff-identity.md` for the force-unwrap-
+  free recorder handoff contract.
+- See `docs/plans/2026-06-13-awaited-recording-finalization.md` for the awaited
+  recording finalization and persistence boundary.
+- See `docs/plans/2026-06-16-user-stopped-autostart-guard.md` for the persisted
+  explicit-stop auto-start boundary.
+- See `docs/plans/2026-06-16-menu-recorder-state-toggle.md` for the state-driven
+  menu start/stop and persisted-intent ordering contract.
+- See `docs/plans/2026-06-17-stream-delegate-failure-cleanup.md` for unexpected
+  stream-stop routing through shared recording cleanup.
+- See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
+  output contract.
+- See `docs/plans/2026-06-14-make-root-override-protection.md` for the
+  caller-resistant, location-independent capture verification root.
+- See `docs/plans/2026-06-14-writer-start-failure-propagation.md` for the
+  fail-closed movie-writer startup boundary.
 
 ## Contributing
 

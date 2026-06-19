@@ -26,7 +26,7 @@ struct CapturedFrame {
 class CaptureEngine: NSObject, @unchecked Sendable {
     
     private let logger = Logger()
-    var movie: MovieRecorder = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
+    var movie: MovieRecorder = MovieRecorder(videoTransform: .identity)
 
 
 
@@ -48,15 +48,18 @@ class CaptureEngine: NSObject, @unchecked Sendable {
         AsyncThrowingStream<CapturedFrame, Error> { continuation in
             self.continuation = continuation
             // The stream output object.
-            let streamOutput = CaptureEngineStreamOutput(continuation: continuation)
+            let streamOutput = CaptureEngineStreamOutput()
             streamOutput.movie = movie
             streamOutput.capturedFrameHandler = { continuation.yield($0) }
             streamOutput.pcmBufferHandler = { self.powerMeter.process(buffer: $0) }
-            self.movie = streamOutput.movie!
+            streamOutput.recordingErrorHandler = { [weak self] error in
+                self?.failCapture(error)
+            }
+            self.movie = movie
             self.startTime = Date()
-            self.movie.startRecording(height: Int(configuration.height), width: Int(configuration.width))
 
             do {
+                try self.movie.startRecording(height: Int(configuration.height), width: Int(configuration.width))
                 stream = SCStream(filter: filter, configuration: configuration, delegate: streamOutput)
 
                 // Add a stream output to capture screen content.
@@ -85,17 +88,30 @@ class CaptureEngine: NSObject, @unchecked Sendable {
             continuation?.finish(throwing: error)
         }
         powerMeter.processSilence()
-        self.movie.stopRecording { [self] url in
-            // save to CoreData
-            let endTime = Date()
+        guard let url = await self.movie.stopRecording() else {
+            return
+        }
 
-            let videoEntry = VideoEntry(context: DataController.shared.moc)
-            videoEntry.id = UUID()
-            videoEntry.url = url.absoluteString
-            videoEntry.startTime = self.startTime
-            videoEntry.endTime = endTime
-            DataController.shared.save()
+        // save to CoreData
+        let endTime = Date()
 
+        let videoEntry = VideoEntry(context: DataController.shared.moc)
+        videoEntry.id = UUID()
+        videoEntry.url = url.absoluteString
+        videoEntry.startTime = self.startTime
+        videoEntry.endTime = endTime
+        DataController.shared.save()
+
+    }
+
+    private func failCapture(_ error: Error) {
+        movie.cancelRecording()
+        continuation?.finish(throwing: error)
+        continuation = nil
+        let stream = self.stream
+        self.stream = nil
+        Task {
+            try? await stream?.stopCapture()
         }
     }
 
@@ -117,13 +133,7 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
 
     var pcmBufferHandler: ((AVAudioPCMBuffer) -> Void)?
     var capturedFrameHandler: ((CapturedFrame) -> Void)?
-
-    // Store the the startCapture continuation, so you can cancel it if an error occurs.
-    private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
-
-    init(continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?) {
-        self.continuation = continuation
-    }
+    var recordingErrorHandler: ((Error) -> Void)?
 
     /// - Tag: DidOutputSampleBuffer
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
@@ -140,12 +150,21 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
             // Create a CapturedFrame structure for a video sample buffer.
             guard let frame = createFrame(for: sampleBuffer) else { return }
             capturedFrameHandler?(frame)
-            movie?.recordVideo(sampleBuffer: sampleBuffer)
+            do {
+                try movie?.recordVideo(sampleBuffer: sampleBuffer)
+            } catch {
+                recordingErrorHandler?(error)
+            }
 
-        case .audio:
+        case .audio, .microphone:
             // Create an AVAudioPCMBuffer from an audio sample buffer.
             guard let samples = createPCMBuffer(for: sampleBuffer) else { return }
             pcmBufferHandler?(samples)
+            do {
+                try movie?.recordAudio(sampleBuffer: sampleBuffer)
+            } catch {
+                recordingErrorHandler?(error)
+            }
         @unknown default:
             logger.error("Ignoring unknown stream output type from ScreenCaptureKit")
         }
@@ -205,6 +224,6 @@ private class CaptureEngineStreamOutput: NSObject, SCStreamOutput, SCStreamDeleg
     }
 
     func stream(_ stream: SCStream, didStopWithError error: Error) {
-        continuation?.finish(throwing: error)
+        recordingErrorHandler?(error)
     }
 }

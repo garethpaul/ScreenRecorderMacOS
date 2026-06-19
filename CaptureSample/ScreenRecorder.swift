@@ -28,7 +28,7 @@ class ScreenRecorder: ObservableObject {
     }
     
     private let logger = Logger()
-    private let movie = MovieRecorder(audioSettings: [:], videoSettings: [:], videoTransform: .identity)
+    private let movie = MovieRecorder(videoTransform: .identity)
 
 
     @Published var isTimerRunning = false
@@ -90,6 +90,8 @@ class ScreenRecorder: ObservableObject {
 
     
     private var isSetup = false
+    private var isStartTaskActive = false
+    private var isStopTaskActive = false
     
     // Combine subscribers.
     private var subscriptions = Set<AnyCancellable>()
@@ -121,8 +123,10 @@ class ScreenRecorder: ObservableObject {
     
     /// Starts capturing screen content.
     func start() async {
-        // Exit early if already running.
-        guard !isRunning else { return }
+        guard !isRunning, !isStartTaskActive, !isStopTaskActive else { return }
+        isStartTaskActive = true
+        defer { isStartTaskActive = false }
+
         startTime = Date()
         resetTimer()
         recordTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -175,7 +179,10 @@ class ScreenRecorder: ObservableObject {
     
     /// Stops capturing screen content.
     func stop() async {
-        guard isRunning else { return }
+        guard isRunning, !isStopTaskActive else { return }
+        isStopTaskActive = true
+        defer { isStopTaskActive = false }
+
         await captureEngine.stopCapture()
         stopAudioMetering()
         isRunning = false
