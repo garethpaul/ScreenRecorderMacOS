@@ -2,8 +2,6 @@
 
 override SHELL := /bin/sh
 override .SHELLFLAGS := -c
-override PYTHON := python3
-override XCODEBUILD := xcodebuild
 override PYTHONDONTWRITEBYTECODE := 1
 export PYTHONDONTWRITEBYTECODE
 ifneq ($(strip $(MAKEFILES)),)
@@ -18,21 +16,24 @@ export ROOT
 ifeq ($(strip $(ROOT)),)
 $(error repository Makefile path could not be resolved)
 endif
+override PYTHON := $(ROOT)/scripts/run-python.sh
+override XCODEBUILD := $(ROOT)/scripts/run-xcodebuild.sh
+export PYTHON XCODEBUILD
 
 lint:
-	$(PYTHON) "$$ROOT/scripts/check-capture-source.py" --mode project
+	"$$PYTHON" "$$ROOT/scripts/check-capture-source.py" --mode project
 
 test:
-	$(PYTHON) "$$ROOT/scripts/check-capture-source.py" --mode behavior
-	$(PYTHON) "$$ROOT/scripts/test_movie_recorder_video_start_contract.py"
-	$(PYTHON) "$$ROOT/scripts/test_screen_recorder_start_stop_contract.py"
-	$(PYTHON) "$$ROOT/scripts/test_user_stopped_autostart_contract.py"
-	$(PYTHON) "$$ROOT/scripts/test_menu_recorder_state_contract.py"
-	$(PYTHON) "$$ROOT/scripts/test_stream_delegate_failure_contract.py"
+	"$$PYTHON" "$$ROOT/scripts/check-capture-source.py" --mode behavior
+	"$$PYTHON" "$$ROOT/scripts/test_movie_recorder_video_start_contract.py"
+	"$$PYTHON" "$$ROOT/scripts/test_screen_recorder_start_stop_contract.py"
+	"$$PYTHON" "$$ROOT/scripts/test_user_stopped_autostart_contract.py"
+	"$$PYTHON" "$$ROOT/scripts/test_menu_recorder_state_contract.py"
+	"$$PYTHON" "$$ROOT/scripts/test_stream_delegate_failure_contract.py"
 
 build: lint
-	@if command -v $(XCODEBUILD) >/dev/null 2>&1; then \
-		cd "$$ROOT" && $(XCODEBUILD) -project ScreenRecorder.xcodeproj -scheme CaptureSample -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build; \
+	@if [ -x /usr/bin/xcodebuild ]; then \
+		cd "$$ROOT" && "$$XCODEBUILD" -project ScreenRecorder.xcodeproj -scheme CaptureSample -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build; \
 	else \
 		echo "xcodebuild not found; static project checks completed"; \
 	fi

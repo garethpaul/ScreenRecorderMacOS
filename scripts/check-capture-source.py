@@ -63,6 +63,8 @@ def require_paths():
         str(STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)),
         "scripts/test_movie_recorder_video_start_contract.py",
         "scripts/test_screen_recorder_start_stop_contract.py",
+        "scripts/run-python.sh",
+        "scripts/run-xcodebuild.sh",
         "CaptureSample/PersistenceController.swift",
         "CaptureSample/Views/MenuView.swift",
         "CaptureSample/CaptureSample.entitlements",
@@ -176,8 +178,6 @@ def project_checks():
     for fragment in (
         "override SHELL := /bin/sh",
         "override .SHELLFLAGS := -c",
-        "override PYTHON := python3",
-        "override XCODEBUILD := xcodebuild",
         "override PYTHONDONTWRITEBYTECODE := 1",
         "export PYTHONDONTWRITEBYTECODE",
         "$(error MAKEFILES must be empty; repository verification requires this Makefile to be loaded alone)",
@@ -186,11 +186,15 @@ def project_checks():
         root_declaration,
         "export ROOT",
         "$(error repository Makefile path could not be resolved)",
-        '$(PYTHON) "$$ROOT/scripts/check-capture-source.py" --mode project',
-        '$(PYTHON) "$$ROOT/scripts/test_movie_recorder_video_start_contract.py"',
-        '$(PYTHON) "$$ROOT/scripts/test_screen_recorder_start_stop_contract.py"',
-        '$(PYTHON) "$$ROOT/scripts/test_stream_delegate_failure_contract.py"',
-        'cd "$$ROOT" && $(XCODEBUILD) -project ScreenRecorder.xcodeproj',
+        "override PYTHON := $(ROOT)/scripts/run-python.sh",
+        "override XCODEBUILD := $(ROOT)/scripts/run-xcodebuild.sh",
+        "export PYTHON XCODEBUILD",
+        '"$$PYTHON" "$$ROOT/scripts/check-capture-source.py" --mode project',
+        '"$$PYTHON" "$$ROOT/scripts/test_movie_recorder_video_start_contract.py"',
+        '"$$PYTHON" "$$ROOT/scripts/test_screen_recorder_start_stop_contract.py"',
+        '"$$PYTHON" "$$ROOT/scripts/test_stream_delegate_failure_contract.py"',
+        '[ -x /usr/bin/xcodebuild ]',
+        'cd "$$ROOT" && "$$XCODEBUILD" -project ScreenRecorder.xcodeproj',
         "CODE_SIGNING_ALLOWED=NO build",
         "root-test:",
         '\t/bin/sh "$$ROOT/scripts/test-makefile-root.sh"',
@@ -198,6 +202,21 @@ def project_checks():
     ):
         if fragment not in makefile:
             errors.append(f"Makefile must keep contract: {fragment}")
+
+    expected_python_launcher = (
+        "#!/bin/sh\n"
+        "set -eu\n\n"
+        "exec /usr/bin/python3 -I -B -c 'import os, runpy, sys; script = sys.argv[1]; "
+        "sys.argv = sys.argv[1:]; sys.path.insert(0, os.path.dirname(os.path.realpath(script))); "
+        "runpy.run_path(script, run_name=\"__main__\")' \"$@\"\n"
+    )
+    if read_text("scripts/run-python.sh") != expected_python_launcher:
+        errors.append("scripts/run-python.sh must keep the absolute isolated Python launcher")
+    expected_xcode_launcher = (
+        "#!/bin/sh\nset -eu\n\nexec /usr/bin/xcodebuild \"$@\"\n"
+    )
+    if read_text("scripts/run-xcodebuild.sh") != expected_xcode_launcher:
+        errors.append("scripts/run-xcodebuild.sh must keep the absolute Xcode launcher")
 
     if MAKE_ROOT_PLAN.exists():
         root_plan = MAKE_ROOT_PLAN.read_text(encoding="utf-8")
@@ -220,9 +239,10 @@ def project_checks():
         root_test_text = root_test.read_text(encoding="utf-8")
         for evidence in (
             "66 executed target/authority cases",
+            "1 dollar-syntax checkout case",
             "MAKEFILE_LIST must not be overridden",
             "MAKEFILES must be empty",
-            "repository Makefile path could not be resolved",
+            "earlier-Makefile detection",
         ):
             if evidence not in root_test_text:
                 errors.append(f"{root_test.relative_to(ROOT)} must preserve {evidence!r}")
@@ -233,7 +253,7 @@ def project_checks():
         authority_plan = MAKE_AUTHORITY_PLAN.read_text(encoding="utf-8")
         for evidence in (
             "Status: Completed",
-            "`make root-test` passed 66 target/authority cases and four rejection cases",
+            "`make root-test` passed 66 target/authority cases, one dollar-syntax checkout case, three override rejections, and one earlier-file detection",
             "`make check` passed from the repository and through an absolute Makefile path",
         ):
             if evidence not in authority_plan:

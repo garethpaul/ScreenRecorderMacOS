@@ -2,9 +2,9 @@
 
 ## 2026-06-21
 
-- Isolated Make verification authority from caller-controlled preload files,
-  file lists, shells, Python commands, Xcode builders, bytecode settings, and
-  repository roots, with 66 target/authority cases and rejection coverage.
+- Isolated repository recipes from caller-controlled roots, shells, tool
+  variables, executable shadowing, Python startup state, and bytecode settings,
+  with 66 target/authority cases and explicit GNU Make startup-boundary notes.
 
 ## 2026-06-19
 

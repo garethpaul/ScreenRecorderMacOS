@@ -61,8 +61,12 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   installed, the `build` target also runs the shared Xcode scheme with code
   signing disabled.
 - `make root-test` proves every public Make target keeps its repository root,
-  shell, Python checker, Xcode builder, and bytecode policy under repository
-  control while rejecting preload and Makefile-list overrides.
+  shell, repository-owned isolated Python launcher, absolute Xcode launcher,
+  and bytecode policy under repository control while detecting unsupported
+  preload and Makefile-list inputs before repository recipes execute.
+  Standard in-checkout invocation supports literal dollar and command-syntax
+  path characters; an absolute `--file` path containing `$` is unsupported
+  because GNU Make expands it before `MAKEFILE_LIST` can expose the filename.
 - GitHub Actions runs `make check` through `.github/workflows/check.yml` on
   all branch pushes, pull requests, and manual dispatches with pinned Node
   24-compatible actions, read-only permissions, disabled checkout credential
@@ -176,8 +180,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   output contract.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for the
   caller-resistant, location-independent capture verification root.
-- See `docs/plans/2026-06-21-make-authority-isolation.md` for isolated Make
-  authority and hostile-input regression coverage.
+- See `docs/plans/2026-06-21-make-authority-isolation.md` for the supported
+  Make authority boundary and hostile-input regression coverage.
 - See `docs/plans/2026-06-14-writer-start-failure-propagation.md` for the
   fail-closed movie-writer startup boundary.
 
