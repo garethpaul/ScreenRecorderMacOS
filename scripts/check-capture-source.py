@@ -178,6 +178,8 @@ def project_checks():
     for fragment in (
         "override SHELL := /bin/sh",
         "override .SHELLFLAGS := -c",
+        "$(PUBLIC_TARGETS): override SHELL := /bin/sh",
+        "$(PUBLIC_TARGETS): override .SHELLFLAGS := -c",
         "override PYTHONDONTWRITEBYTECODE := 1",
         "export PYTHONDONTWRITEBYTECODE",
         "$(error MAKEFILES must be empty; repository verification requires this Makefile to be loaded alone)",
@@ -189,16 +191,21 @@ def project_checks():
         "override PYTHON := $(ROOT)/scripts/run-python.sh",
         "override XCODEBUILD := $(ROOT)/scripts/run-xcodebuild.sh",
         "export PYTHON XCODEBUILD",
-        '"$$PYTHON" "$$ROOT/scripts/check-capture-source.py" --mode project',
-        '"$$PYTHON" "$$ROOT/scripts/test_movie_recorder_video_start_contract.py"',
-        '"$$PYTHON" "$$ROOT/scripts/test_screen_recorder_start_stop_contract.py"',
-        '"$$PYTHON" "$$ROOT/scripts/test_stream_delegate_failure_contract.py"',
+        "override REPOSITORY_ROOT_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(ROOT))",
+        "override REPOSITORY_PYTHON_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(PYTHON))",
+        "override REPOSITORY_XCODEBUILD_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(XCODEBUILD))",
+        "PUBLIC_TARGETS := build check lint root-test test verify",
+        "$(PUBLIC_TARGETS)::",
+        "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/check-capture-source.py' --mode project",
+        "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_movie_recorder_video_start_contract.py'",
+        "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_screen_recorder_start_stop_contract.py'",
+        "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_stream_delegate_failure_contract.py'",
         '[ -x /usr/bin/xcodebuild ]',
-        'cd "$$ROOT" && "$$XCODEBUILD" -project ScreenRecorder.xcodeproj',
+        "cd '$(REPOSITORY_ROOT_LITERAL)' && '$(REPOSITORY_XCODEBUILD_LITERAL)' -project ScreenRecorder.xcodeproj",
         "CODE_SIGNING_ALLOWED=NO build",
-        "root-test:",
-        '\t/bin/sh "$$ROOT/scripts/test-makefile-root.sh"',
-        "verify: root-test lint test build",
+        "root-test::",
+        "\t/bin/sh '$(REPOSITORY_ROOT_LITERAL)/scripts/test-makefile-root.sh'",
+        "verify:: root-test lint test build",
     ):
         if fragment not in makefile:
             errors.append(f"Makefile must keep contract: {fragment}")
@@ -243,6 +250,9 @@ def project_checks():
             "MAKEFILE_LIST must not be overridden",
             "MAKEFILES must be empty",
             "earlier-Makefile detection",
+            "later six-recipe replacement rejection",
+            "later target-specific authority containment case",
+            "documented override/double-colon caller boundaries",
         ):
             if evidence not in root_test_text:
                 errors.append(f"{root_test.relative_to(ROOT)} must preserve {evidence!r}")
@@ -255,11 +265,23 @@ def project_checks():
             "Status: Completed",
             "`make root-test` passed 66 target/authority cases, one dollar-syntax checkout case, three override rejections, and one earlier-file detection",
             "`make check` passed from the repository and through an absolute Makefile path",
+            "GNU Make `override` directives",
+            "caller-added double-colon recipes",
+            "startup parse-time code",
         ):
             if evidence not in authority_plan:
                 errors.append(
                     f"{MAKE_AUTHORITY_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
                 )
+
+    readme = read_text("README.md")
+    for evidence in (
+        "GNU Make `override` directives",
+        "caller-added double-colon recipes",
+        "startup parse-time code",
+    ):
+        if evidence not in readme:
+            errors.append(f"README.md must document caller Make boundary {evidence!r}")
 
     for docs_file in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
         document = read_text(docs_file)

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && /bin/pwd -P)
+ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && /bin/pwd -P)
 TEMP_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/screen-recorder-root-control-XXXXXX")
 ATTACKER_ROOT="$TEMP_ROOT/attacker-root"
 trap 'rm -rf "$TEMP_ROOT"' EXIT HUP INT TERM
@@ -15,8 +15,8 @@ FAKE_SHELL_LOG="$TEMP_ROOT/fake-shell.log"
 PATH_SHADOW_LOG="$TEMP_ROOT/path-shadow.log"
 export SCREEN_RECORDER_PATH_SHADOW_LOG="$PATH_SHADOW_LOG"
 mkdir "$CONTROL_DIR" "$CHECKOUT" "$CHECKOUT/scripts" "$CHECKOUT/bin" "$ATTACKER_ROOT"
-CONTROL_DIR=$(CDPATH= cd -- "$CONTROL_DIR" && /bin/pwd -P)
-CHECKOUT=$(CDPATH= cd -- "$CHECKOUT" && /bin/pwd -P)
+CONTROL_DIR=$(CDPATH='' cd -- "$CONTROL_DIR" && /bin/pwd -P)
+CHECKOUT=$(CDPATH='' cd -- "$CHECKOUT" && /bin/pwd -P)
 MAKEFILE="$CHECKOUT/Makefile"
 cp "$ROOT_DIR/Makefile" "$MAKEFILE"
 
@@ -147,7 +147,7 @@ done
 
 DOLLAR_CHECKOUT="$TEMP_ROOT/screen-recorder \$(touch SCREEN_RECORDER_DOLLAR_MARKER)"
 mkdir "$DOLLAR_CHECKOUT" "$DOLLAR_CHECKOUT/scripts"
-DOLLAR_CHECKOUT=$(CDPATH= cd -- "$DOLLAR_CHECKOUT" && /bin/pwd -P)
+DOLLAR_CHECKOUT=$(CDPATH='' cd -- "$DOLLAR_CHECKOUT" && /bin/pwd -P)
 cp "$MAKEFILE" "$DOLLAR_CHECKOUT/Makefile"
 cp "$CHECKOUT/scripts/run-python.sh" "$DOLLAR_CHECKOUT/scripts/run-python.sh"
 rm -f "$COMMAND_LOG" "$PATH_SHADOW_LOG"
@@ -180,4 +180,48 @@ EARLIER="$TEMP_ROOT/earlier.mk"
 printf '%s\n' '# earlier' >"$EARLIER"
 if (cd "$CONTROL_DIR" && /usr/bin/make --no-print-directory --file "$EARLIER" --file "$MAKEFILE" check) >"$TEMP_ROOT/multiple.out" 2>&1; then exit 1; fi
 grep -Fq "repository Makefile path could not be resolved" "$TEMP_ROOT/multiple.out"
-printf '%s\n' "Makefile root tests passed: 66 executed target/authority cases, 1 dollar-syntax checkout case, 2 MAKEFILE_LIST rejections, 1 MAKEFILES rejection, and 1 earlier-Makefile detection"
+
+LATER="$TEMP_ROOT/later.mk"
+LATER_MARKER="$TEMP_ROOT/later-marker"
+cat >"$LATER" <<EOF
+.PHONY: build check lint root-test test verify
+build check lint root-test test verify:
+	@printf '%s\n' '\$@' >> '$LATER_MARKER'
+EOF
+rm -f "$LATER_MARKER" "$COMMAND_LOG"
+if (cd "$CONTROL_DIR" && /usr/bin/make --no-print-directory --file "$MAKEFILE" --file "$LATER" check) >"$TEMP_ROOT/later.out" 2>&1; then
+  printf '%s\n' "later six-recipe replacement unexpectedly passed" >&2
+  exit 1
+fi
+if [ -e "$LATER_MARKER" ] || [ -e "$COMMAND_LOG" ]; then
+  printf '%s\n' "later six-recipe replacement reached a recipe" >&2
+  exit 1
+fi
+grep -Fq "has both : and :: entries" "$TEMP_ROOT/later.out"
+
+LATER_VARS="$TEMP_ROOT/later-vars.mk"
+cat >"$LATER_VARS" <<EOF
+build check lint root-test test verify: ROOT := $ATTACKER_ROOT
+build check lint root-test test verify: PYTHON := $BAD_COMMAND
+build check lint root-test test verify: XCODEBUILD := $BAD_COMMAND
+build check lint root-test test verify: SHELL := $FAKE_SHELL
+build check lint root-test test verify: .SHELLFLAGS := -c
+EOF
+rm -f "$COMMAND_LOG" "$BAD_COMMAND_LOG" "$FAKE_SHELL_LOG" "$PATH_SHADOW_LOG"
+if ! (cd "$CONTROL_DIR" && PATH="$CHECKOUT/bin:$PATH" SCREEN_RECORDER_COMMAND_LOG="$COMMAND_LOG" SCREEN_RECORDER_PATH_SHADOW_LOG="$PATH_SHADOW_LOG" /usr/bin/make --no-print-directory --file "$MAKEFILE" --file "$LATER_VARS" lint) >"$TEMP_ROOT/later-vars.out" 2>&1; then
+  cat "$TEMP_ROOT/later-vars.out" >&2
+  exit 1
+fi
+assert_commands_stayed_in_checkout later-target-variables lint
+if [ -e "$BAD_COMMAND_LOG" ] || [ -e "$FAKE_SHELL_LOG" ] || [ -e "$PATH_SHADOW_LOG" ]; then
+  printf '%s\n' "later target-specific authority intercepted repository validation" >&2
+  exit 1
+fi
+
+BOUNDARY_TEXT="GNU Make \`override\` directives"
+grep -Fq "$BOUNDARY_TEXT" "$ROOT_DIR/README.md"
+grep -Fq 'caller-added double-colon recipes' "$ROOT_DIR/README.md"
+grep -Fq "$BOUNDARY_TEXT" "$ROOT_DIR/docs/plans/2026-06-21-make-authority-isolation.md"
+grep -Fq 'caller-added double-colon recipes' "$ROOT_DIR/docs/plans/2026-06-21-make-authority-isolation.md"
+
+printf '%s\n' "Makefile root tests passed: 66 executed target/authority cases, 1 dollar-syntax checkout case, 2 MAKEFILE_LIST rejections, 1 MAKEFILES rejection, 1 earlier-Makefile detection, 1 later six-recipe replacement rejection, 1 later target-specific authority containment case, and documented override/double-colon caller boundaries"
