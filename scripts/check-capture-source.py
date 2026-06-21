@@ -22,6 +22,7 @@ RECORDING_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-12-recording-finalization-in
 AWAITED_FINALIZATION_PLAN = DOCS_PLANS / "2026-06-13-awaited-recording-finalization.md"
 AUDIO_FORWARDING_PLAN = DOCS_PLANS / "2026-06-13-audio-sample-forwarding.md"
 MAKE_ROOT_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
+MAKE_AUTHORITY_PLAN = DOCS_PLANS / "2026-06-21-make-authority-isolation.md"
 WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-writer-start-failure-propagation.md"
 RUNTIME_WRITER_START_FAILURE_PLAN = DOCS_PLANS / "2026-06-14-runtime-writer-start-failure.md"
 VIDEO_APPEND_FAILURE_PLAN = DOCS_PLANS / "2026-06-15-video-append-failure-propagation.md"
@@ -91,6 +92,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-13-audio-sample-forwarding.md is missing")
     if not MAKE_ROOT_PLAN.exists():
         errors.append("docs/plans/2026-06-14-make-root-override-protection.md is missing")
+    if not MAKE_AUTHORITY_PLAN.exists():
+        errors.append("docs/plans/2026-06-21-make-authority-isolation.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -162,26 +165,36 @@ def project_checks():
                 errors.append(f"GitHub Actions action {action} must be pinned to a full commit SHA")
 
     makefile = MAKEFILE.read_text(encoding="utf-8") if MAKEFILE.exists() else ""
-    root_declaration = "override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))"
+    root_declaration = "override ROOT := $(shell path='$(subst ','\"'\"',$(MAKEFILE_LIST))'; path=$$(printf '%s' \"$$path\" | /usr/bin/sed 's/^ //'); [ -f \"$$path\" ] || exit 1; directory=$$(/usr/bin/dirname -- \"$$path\"); CDPATH= cd -- \"$$directory\" && /bin/pwd -P)"
     root_assignments = [
         line
         for line in makefile.splitlines()
         if re.match(r"^(?:override\s+)?ROOT\s*[:?+]?=", line)
     ]
-    if not makefile.startswith(f"{root_declaration}\n") or root_assignments != [
-        root_declaration
-    ]:
-        errors.append(
-            "Makefile must define exactly one protected repository-derived ROOT declaration first"
-        )
+    if root_assignments != [root_declaration]:
+        errors.append("Makefile must define exactly one safe repository-derived ROOT declaration")
     for fragment in (
+        "override SHELL := /bin/sh",
+        "override .SHELLFLAGS := -c",
+        "override PYTHON := python3",
+        "override XCODEBUILD := xcodebuild",
+        "override PYTHONDONTWRITEBYTECODE := 1",
+        "export PYTHONDONTWRITEBYTECODE",
+        "$(error MAKEFILES must be empty; repository verification requires this Makefile to be loaded alone)",
+        "override MAKEFILES :=",
+        "$(error MAKEFILE_LIST must not be overridden)",
         root_declaration,
-        '$(PYTHON) "$(ROOT)/scripts/check-capture-source.py" --mode project',
-        '$(PYTHON) "$(ROOT)/scripts/test_movie_recorder_video_start_contract.py"',
-        '$(PYTHON) "$(ROOT)/scripts/test_screen_recorder_start_stop_contract.py"',
-        '$(PYTHON) "$(ROOT)/scripts/test_stream_delegate_failure_contract.py"',
-        'cd "$(ROOT)" && "$(XCODEBUILD)" -project ScreenRecorder.xcodeproj',
+        "export ROOT",
+        "$(error repository Makefile path could not be resolved)",
+        '$(PYTHON) "$$ROOT/scripts/check-capture-source.py" --mode project',
+        '$(PYTHON) "$$ROOT/scripts/test_movie_recorder_video_start_contract.py"',
+        '$(PYTHON) "$$ROOT/scripts/test_screen_recorder_start_stop_contract.py"',
+        '$(PYTHON) "$$ROOT/scripts/test_stream_delegate_failure_contract.py"',
+        'cd "$$ROOT" && $(XCODEBUILD) -project ScreenRecorder.xcodeproj',
         "CODE_SIGNING_ALLOWED=NO build",
+        "root-test:",
+        '\t/bin/sh "$$ROOT/scripts/test-makefile-root.sh"',
+        "verify: root-test lint test build",
     ):
         if fragment not in makefile:
             errors.append(f"Makefile must keep contract: {fragment}")
@@ -201,6 +214,32 @@ def project_checks():
                 )
         if str(MAKE_ROOT_PLAN.relative_to(ROOT)) not in read_text("README.md"):
             errors.append(f"README.md must reference {MAKE_ROOT_PLAN.relative_to(ROOT)}")
+
+    root_test = ROOT / "scripts" / "test-makefile-root.sh"
+    if root_test.exists():
+        root_test_text = root_test.read_text(encoding="utf-8")
+        for evidence in (
+            "66 executed target/authority cases",
+            "MAKEFILE_LIST must not be overridden",
+            "MAKEFILES must be empty",
+            "repository Makefile path could not be resolved",
+        ):
+            if evidence not in root_test_text:
+                errors.append(f"{root_test.relative_to(ROOT)} must preserve {evidence!r}")
+    else:
+        errors.append("scripts/test-makefile-root.sh is missing")
+
+    if MAKE_AUTHORITY_PLAN.exists():
+        authority_plan = MAKE_AUTHORITY_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "`make root-test` passed 66 target/authority cases and four rejection cases",
+            "`make check` passed from the repository and through an absolute Makefile path",
+        ):
+            if evidence not in authority_plan:
+                errors.append(
+                    f"{MAKE_AUTHORITY_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
 
     for docs_file in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
         document = read_text(docs_file)

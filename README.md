@@ -60,6 +60,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make check` runs static project/source checks. When `xcodebuild` is
   installed, the `build` target also runs the shared Xcode scheme with code
   signing disabled.
+- `make root-test` proves every public Make target keeps its repository root,
+  shell, Python checker, Xcode builder, and bytecode policy under repository
+  control while rejecting preload and Makefile-list overrides.
 - GitHub Actions runs `make check` through `.github/workflows/check.yml` on
   all branch pushes, pull requests, and manual dispatches with pinned Node
   24-compatible actions, read-only permissions, disabled checkout credential
@@ -173,6 +176,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   output contract.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for the
   caller-resistant, location-independent capture verification root.
+- See `docs/plans/2026-06-21-make-authority-isolation.md` for isolated Make
+  authority and hostile-input regression coverage.
 - See `docs/plans/2026-06-14-writer-start-failure-propagation.md` for the
   fail-closed movie-writer startup boundary.
 
