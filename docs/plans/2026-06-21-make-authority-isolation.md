@@ -28,6 +28,8 @@ replace static contracts or turn the hosted native build into a no-op.
   command-substitution syntax in its path.
 - Covered all six public targets across eleven authority modes plus explicit
   file-list/preload rejection and earlier-file detection cases.
+- Defined all six public aliases as double-colon rules so later single-colon
+  recipe replacement fails during parsing before an attacker recipe executes.
 - Left Swift source, Xcode project, entitlements, and application behavior
   unchanged.
 
@@ -41,6 +43,11 @@ verification inputs. The repository detects the cases visible when its own
 file is parsed and fails before repository recipes execute; CI and documented
 usage invoke `make check` without extra startup code.
 
+This is a checked-in Makefile boundary, not a sandbox for arbitrary caller
+programs. GNU Make `override` directives, caller-added double-colon recipes,
+and startup parse-time code retain Make-level authority and remain outside the
+local no-execution claim.
+
 GNU Make also expands dollar syntax in an absolute `--file` argument before
 recording `MAKEFILE_LIST`. Repositories whose path contains `$` therefore use
 the documented in-checkout `make check` form; that form is covered with a
@@ -49,6 +56,8 @@ literal `$(...)` directory name and does not execute the path text.
 ## Verification
 
 - `make root-test` passed 66 target/authority cases, one dollar-syntax checkout case, three override rejections, and one earlier-file detection.
+- A later single-colon file replacing all six public aliases failed closed
+  before any replacement marker or repository recipe executed.
 - `make check` passed from the repository and through an absolute Makefile path.
 - Python and shell syntax checks, `git diff --check`, and repository integrity
   screening passed.
