@@ -67,7 +67,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   Later single-colon replacement of all six public aliases fails during Make
   parsing. Arbitrary caller Make programs remain outside this local boundary:
   GNU Make `override` directives, caller-added double-colon recipes, and
-  startup parse-time code can execute with Make-level authority.
+  startup parse-time code can execute with Make-level authority. Repository
+  aliases pin `/bin/sh -c` target-specifically and embed the reviewed root and
+  launcher paths before later non-override target-specific variables can alter
+  recipe execution.
   Standard in-checkout invocation supports literal dollar and command-syntax
   path characters; an absolute `--file` path containing `$` is unsupported
   because GNU Make expands it before `MAKEFILE_LIST` can expose the filename.

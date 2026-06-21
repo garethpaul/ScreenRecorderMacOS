@@ -199,10 +199,26 @@ if [ -e "$LATER_MARKER" ] || [ -e "$COMMAND_LOG" ]; then
 fi
 grep -Fq "has both : and :: entries" "$TEMP_ROOT/later.out"
 
+LATER_VARS="$TEMP_ROOT/later-vars.mk"
+cat >"$LATER_VARS" <<EOF
+build check lint root-test test verify: ROOT := $ATTACKER_ROOT
+build check lint root-test test verify: PYTHON := $BAD_COMMAND
+build check lint root-test test verify: XCODEBUILD := $BAD_COMMAND
+build check lint root-test test verify: SHELL := $FAKE_SHELL
+build check lint root-test test verify: .SHELLFLAGS := -c
+EOF
+rm -f "$COMMAND_LOG" "$BAD_COMMAND_LOG" "$FAKE_SHELL_LOG" "$PATH_SHADOW_LOG"
+(cd "$CONTROL_DIR" && PATH="$CHECKOUT/bin:$PATH" SCREEN_RECORDER_COMMAND_LOG="$COMMAND_LOG" SCREEN_RECORDER_PATH_SHADOW_LOG="$PATH_SHADOW_LOG" /usr/bin/make --no-print-directory --file "$MAKEFILE" --file "$LATER_VARS" lint) >"$TEMP_ROOT/later-vars.out" 2>&1
+assert_commands_stayed_in_checkout later-target-variables lint
+if [ -e "$BAD_COMMAND_LOG" ] || [ -e "$FAKE_SHELL_LOG" ] || [ -e "$PATH_SHADOW_LOG" ]; then
+  printf '%s\n' "later target-specific authority intercepted repository validation" >&2
+  exit 1
+fi
+
 BOUNDARY_TEXT="GNU Make \`override\` directives"
 grep -Fq "$BOUNDARY_TEXT" "$ROOT_DIR/README.md"
 grep -Fq 'caller-added double-colon recipes' "$ROOT_DIR/README.md"
 grep -Fq "$BOUNDARY_TEXT" "$ROOT_DIR/docs/plans/2026-06-21-make-authority-isolation.md"
 grep -Fq 'caller-added double-colon recipes' "$ROOT_DIR/docs/plans/2026-06-21-make-authority-isolation.md"
 
-printf '%s\n' "Makefile root tests passed: 66 executed target/authority cases, 1 dollar-syntax checkout case, 2 MAKEFILE_LIST rejections, 1 MAKEFILES rejection, 1 earlier-Makefile detection, 1 later six-recipe replacement rejection, and documented override/double-colon caller boundaries"
+printf '%s\n' "Makefile root tests passed: 66 executed target/authority cases, 1 dollar-syntax checkout case, 2 MAKEFILE_LIST rejections, 1 MAKEFILES rejection, 1 earlier-Makefile detection, 1 later six-recipe replacement rejection, 1 later target-specific authority containment case, and documented override/double-colon caller boundaries"

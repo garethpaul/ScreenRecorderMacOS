@@ -30,6 +30,9 @@ replace static contracts or turn the hosted native build into a no-op.
   file-list/preload rejection and earlier-file detection cases.
 - Defined all six public aliases as double-colon rules so later single-colon
   recipe replacement fails during parsing before an attacker recipe executes.
+- Pinned `/bin/sh -c` target-specifically and embedded the reviewed root,
+  isolated Python launcher, and absolute Xcode launcher in repository recipes
+  before later non-override target-specific variables can replace them.
 - Left Swift source, Xcode project, entitlements, and application behavior
   unchanged.
 
