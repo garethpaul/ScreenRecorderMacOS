@@ -208,7 +208,10 @@ build check lint root-test test verify: SHELL := $FAKE_SHELL
 build check lint root-test test verify: .SHELLFLAGS := -c
 EOF
 rm -f "$COMMAND_LOG" "$BAD_COMMAND_LOG" "$FAKE_SHELL_LOG" "$PATH_SHADOW_LOG"
-(cd "$CONTROL_DIR" && PATH="$CHECKOUT/bin:$PATH" SCREEN_RECORDER_COMMAND_LOG="$COMMAND_LOG" SCREEN_RECORDER_PATH_SHADOW_LOG="$PATH_SHADOW_LOG" /usr/bin/make --no-print-directory --file "$MAKEFILE" --file "$LATER_VARS" lint) >"$TEMP_ROOT/later-vars.out" 2>&1
+if ! (cd "$CONTROL_DIR" && PATH="$CHECKOUT/bin:$PATH" SCREEN_RECORDER_COMMAND_LOG="$COMMAND_LOG" SCREEN_RECORDER_PATH_SHADOW_LOG="$PATH_SHADOW_LOG" /usr/bin/make --no-print-directory --file "$MAKEFILE" --file "$LATER_VARS" lint) >"$TEMP_ROOT/later-vars.out" 2>&1; then
+  cat "$TEMP_ROOT/later-vars.out" >&2
+  exit 1
+fi
 assert_commands_stayed_in_checkout later-target-variables lint
 if [ -e "$BAD_COMMAND_LOG" ] || [ -e "$FAKE_SHELL_LOG" ] || [ -e "$PATH_SHADOW_LOG" ]; then
   printf '%s\n' "later target-specific authority intercepted repository validation" >&2
