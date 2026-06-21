@@ -23,7 +23,7 @@ endif
 override PYTHON := $(ROOT)/scripts/run-python.sh
 override XCODEBUILD := $(ROOT)/scripts/run-xcodebuild.sh
 export PYTHON XCODEBUILD
-override REPOSITORY_SHELL_LITERAL = $(subst $$,$$$$,$(subst ','"'"',$1))
+override REPOSITORY_SHELL_LITERAL = $(subst ','"'"',$1)
 override REPOSITORY_ROOT_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(ROOT))
 override REPOSITORY_PYTHON_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(PYTHON))
 override REPOSITORY_XCODEBUILD_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(XCODEBUILD))
