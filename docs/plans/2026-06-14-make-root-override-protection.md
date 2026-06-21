@@ -13,7 +13,9 @@ check` can redirect those commands away from the checkout.
 
 - **R1:** Prevent command-line and environment values from replacing the
   Makefile-derived repository root.
-- **R2:** Keep `PYTHON` and `XCODEBUILD` configurable.
+- **R2:** Keep the documented Python and Xcode tools. The Make
+  authority-isolation follow-up fixed both command names because they are part
+  of the trusted verification boundary.
 - **R3:** Require the exact protected declaration in the capture checker.
 - **R4:** Prove every public Make alias from the checkout and an external
   directory with a hostile `ROOT` argument.
