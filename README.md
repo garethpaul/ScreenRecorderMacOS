@@ -97,6 +97,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   recorder's centralized timer string, with the visible timer reset after stop.
 - Static behavior checks also require recording start failures to stop audio
   metering and reset the visible timer.
+- Refreshed ScreenCaptureKit inventories replace disconnected display and
+  closed-window selections by stable source identifier, without reconfiguring
+  capture merely because an equivalent source object was refreshed.
 - Static behavior checks also require capture setup failures to cancel the
   movie writer and remove its unfinished file.
 - A writer startup failure propagates before ScreenCaptureKit starts, so the app
@@ -183,6 +186,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   menu start/stop and persisted-intent ordering contract.
 - See `docs/plans/2026-06-17-stream-delegate-failure-cleanup.md` for unexpected
   stream-stop routing through shared recording cleanup.
+- See `docs/plans/2026-06-25-capture-source-reconciliation.md` for display
+  disconnect and closed-window selection recovery.
 - See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
   output contract.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for the

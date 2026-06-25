@@ -1,5 +1,69 @@
 # Changes
 
+## 2026-06-25 12:43 PDT - P1 - Reconcile disconnected capture sources
+
+### Summary
+
+Replaced nil-only display/window selection refresh with stable-identifier
+reconciliation so disconnected displays and closed windows cannot remain as
+stale selected capture sources.
+
+### Work completed
+
+- Added a generic refreshed-selection helper keyed by `displayID` or `windowID`.
+- Replaced missing sources with the first current source while retaining the
+  refreshed object for unchanged IDs.
+- Prevented equivalent refreshed objects from triggering redundant active
+  capture configuration updates.
+- Added a focused mutation-sensitive source contract and maintenance plan.
+
+### Threads
+
+- Started: none; the focused source lifecycle defect was handled directly.
+- Continued: none.
+- Stopped: none.
+
+### Files changed
+
+- `CaptureSample/ScreenRecorder.swift` — reconciled refreshed source selection.
+- `scripts/capture_source_reconciliation_contract.py` — added source invariant.
+- `scripts/test_capture_source_reconciliation_contract.py` — added six hostile
+  mutations.
+- `Makefile` and `scripts/check-capture-source.py` — registered the new gate.
+- `README.md`, `VISION.md`, `AGENTS.md`, and the maintenance plan — documented
+  the lifecycle boundary.
+
+### Validation
+
+- Initial focused contract — rejected ten missing reconciliation invariants.
+- Focused mutation suite — passed with six hostile mutations rejected.
+- Repository and external-directory `make check` — passed 66 Make authority
+  cases plus all project, behavior, and mutation contracts; Linux truthfully
+  skipped unavailable Xcode.
+- Python compilation and `git diff --check` — passed.
+- Validation-created Python bytecode was removed; credential, recording-file,
+  conflict-marker, and generated-artifact scans were clean.
+- Initial exact-head Codex review — clean on
+  `7d621210ef28f5b495a600b16e394ea1ea8d7118` with no actionable findings.
+- Initial hosted contract and unsigned macOS build jobs — passed for push and
+  pull-request events; CodeQL Actions and Python passed while Swift analysis
+  remained in progress when this evidence update was prepared.
+- Final exact-head review and hosted reruns remain required after this update.
+
+### Bugs / findings
+
+- P1: a disconnected display or closed selected window remained selected after
+  ScreenCaptureKit returned a new inventory.
+
+### Blockers
+
+- Live source-disconnect recording requires permission-capable macOS manual
+  validation; unsigned hosted compilation cannot exercise ScreenCaptureKit.
+
+### Next action
+
+- Require clean final-head review plus hosted contract, build, and CodeQL gates.
+
 ## 2026-06-21
 
 - Isolated repository recipes from caller-controlled roots, shells, tool

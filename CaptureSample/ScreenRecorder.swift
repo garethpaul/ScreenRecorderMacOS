@@ -18,6 +18,16 @@ class AudioLevelsProvider: ObservableObject {
     @Published var audioLevels = AudioLevels.zero
 }
 
+private func refreshedSelection<Element, Identifier: Equatable>(
+    current: Element?,
+    available: [Element],
+    identifier: (Element) -> Identifier
+) -> Element? {
+    guard let current else { return available.first }
+    let currentIdentifier = identifier(current)
+    return available.first { identifier($0) == currentIdentifier } ?? available.first
+}
+
 @MainActor
 class ScreenRecorder: ObservableObject {
     
@@ -45,11 +55,15 @@ class ScreenRecorder: ObservableObject {
     }
     
     @Published var selectedDisplay: SCDisplay? {
-        didSet { updateEngine() }
+        didSet {
+            if oldValue?.displayID != selectedDisplay?.displayID { updateEngine() }
+        }
     }
     
     @Published var selectedWindow: SCWindow? {
-        didSet { updateEngine() }
+        didSet {
+            if oldValue?.windowID != selectedWindow?.windowID { updateEngine() }
+        }
     }
     
     @Published var isAppExcluded = true {
@@ -295,13 +309,17 @@ class ScreenRecorder: ObservableObject {
                 availableWindows = windows
             }
             availableApps = availableContent.applications
-            
-            if selectedDisplay == nil {
-                selectedDisplay = availableDisplays.first
-            }
-            if selectedWindow == nil {
-                selectedWindow = availableWindows.first
-            }
+
+            selectedDisplay = refreshedSelection(
+                current: selectedDisplay,
+                available: availableDisplays,
+                identifier: { $0.displayID }
+            )
+            selectedWindow = refreshedSelection(
+                current: selectedWindow,
+                available: availableWindows,
+                identifier: { $0.windowID }
+            )
         } catch {
             logger.error("Failed to get the shareable content: \(error.localizedDescription)")
         }

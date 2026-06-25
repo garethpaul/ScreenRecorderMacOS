@@ -57,6 +57,8 @@ built with ScreenCaptureKit.
   recording cleanup path.
 - MovieRecorder exposes only its video transform at initialization; fixed audio
   and video output settings remain inside startRecording.
+- Reconcile refreshed displays by `displayID` and windows by `windowID`; object
+  instance refreshes must not trigger capture reconfiguration when IDs match.
 - See `docs/plans/2026-06-08-local-player-viewer.md` for the local player viewer guard.
 
 ## Agent workflow

@@ -8,6 +8,7 @@ from menu_recorder_state_contract import validation_errors as menu_state_errors
 from movie_recorder_video_start_contract import validation_errors as video_start_errors
 from screen_recorder_start_stop_contract import validation_errors as start_stop_errors
 from stream_delegate_failure_contract import validation_errors as stream_delegate_errors
+from capture_source_reconciliation_contract import validation_errors as source_reconciliation_errors
 from user_stopped_autostart_contract import validation_errors as autostart_errors
 
 
@@ -31,6 +32,7 @@ RECORDER_SETTINGS_PLAN = DOCS_PLANS / "2026-06-16-recorder-settings-contract.md"
 USER_STOPPED_AUTOSTART_PLAN = DOCS_PLANS / "2026-06-16-user-stopped-autostart-guard.md"
 MENU_RECORDER_STATE_PLAN = DOCS_PLANS / "2026-06-16-menu-recorder-state-toggle.md"
 STREAM_DELEGATE_FAILURE_PLAN = DOCS_PLANS / "2026-06-17-stream-delegate-failure-cleanup.md"
+SOURCE_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-25-capture-source-reconciliation.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -61,8 +63,11 @@ def require_paths():
         str(USER_STOPPED_AUTOSTART_PLAN.relative_to(ROOT)),
         str(MENU_RECORDER_STATE_PLAN.relative_to(ROOT)),
         str(STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)),
+        str(SOURCE_RECONCILIATION_PLAN.relative_to(ROOT)),
         "scripts/test_movie_recorder_video_start_contract.py",
         "scripts/test_screen_recorder_start_stop_contract.py",
+        "scripts/capture_source_reconciliation_contract.py",
+        "scripts/test_capture_source_reconciliation_contract.py",
         "scripts/run-python.sh",
         "scripts/run-xcodebuild.sh",
         "CaptureSample/PersistenceController.swift",
@@ -200,6 +205,7 @@ def project_checks():
         "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_movie_recorder_video_start_contract.py'",
         "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_screen_recorder_start_stop_contract.py'",
         "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_stream_delegate_failure_contract.py'",
+        "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_capture_source_reconciliation_contract.py'",
         '[ -x /usr/bin/xcodebuild ]',
         "cd '$(REPOSITORY_ROOT_LITERAL)' && '$(REPOSITORY_XCODEBUILD_LITERAL)' -project ScreenRecorder.xcodeproj",
         "CODE_SIGNING_ALLOWED=NO build",
@@ -330,6 +336,7 @@ def behavior_checks():
     errors.extend(stream_delegate_errors(capture_engine))
     screen_recorder = read_text("CaptureSample/ScreenRecorder.swift")
     errors.extend(start_stop_errors(screen_recorder))
+    errors.extend(source_reconciliation_errors(screen_recorder))
     capture_app = read_text("CaptureSample/CaptureSampleApp.swift")
     content_view = read_text("CaptureSample/ContentView.swift")
     errors.extend(autostart_errors(content_view))
@@ -646,6 +653,22 @@ def behavior_checks():
         if str(STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)) not in read_text("README.md"):
             errors.append(
                 f"README.md must reference {STREAM_DELEGATE_FAILURE_PLAN.relative_to(ROOT)}"
+            )
+    if SOURCE_RECONCILIATION_PLAN.exists():
+        source_reconciliation_plan = SOURCE_RECONCILIATION_PLAN.read_text(encoding="utf-8")
+        for evidence in (
+            "Status: Completed",
+            "repository and external-directory `make check` passed",
+            "six capture-source mutations were rejected",
+            "hosted unsigned macOS compilation",
+        ):
+            if evidence not in source_reconciliation_plan:
+                errors.append(
+                    f"{SOURCE_RECONCILIATION_PLAN.relative_to(ROOT)} must record verification evidence {evidence!r}"
+                )
+        if str(SOURCE_RECONCILIATION_PLAN.relative_to(ROOT)) not in read_text("README.md"):
+            errors.append(
+                f"README.md must reference {SOURCE_RECONCILIATION_PLAN.relative_to(ROOT)}"
             )
     if '@AppStorage("timerString")' in capture_app:
         errors.append("CaptureSampleApp must not keep a separate menu bar timer string")
