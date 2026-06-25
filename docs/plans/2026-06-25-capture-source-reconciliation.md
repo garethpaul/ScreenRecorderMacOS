@@ -50,5 +50,5 @@ available source instead of retaining a disconnected display or closed window.
   display/window reconciliation, first-source fallback, and nil-only behavior.
 - repository and external-directory `make check` passed all portable project,
   behavior, mutation, and Make-authority gates; Linux truthfully skipped Xcode.
-- hosted unsigned macOS compilation remains required before merge.
+- hosted unsigned macOS compilation passed before merge.
 - Exact-head review evidence is recorded in `CHANGES.md` before merge.

@@ -43,7 +43,12 @@ stale selected capture sources.
 - Python compilation and `git diff --check` — passed.
 - Validation-created Python bytecode was removed; credential, recording-file,
   conflict-marker, and generated-artifact scans were clean.
-- Hosted build and exact-head review remain pending.
+- Initial exact-head Codex review — clean on
+  `7d621210ef28f5b495a600b16e394ea1ea8d7118` with no actionable findings.
+- Initial hosted contract and unsigned macOS build jobs — passed for push and
+  pull-request events; CodeQL Actions and Python passed while Swift analysis
+  remained in progress when this evidence update was prepared.
+- Final exact-head review and hosted reruns remain required after this update.
 
 ### Bugs / findings
 
@@ -57,7 +62,7 @@ stale selected capture sources.
 
 ### Next action
 
-- Complete hosted compilation and exact-head review.
+- Require clean final-head review plus hosted contract, build, and CodeQL gates.
 
 ## 2026-06-21
 
