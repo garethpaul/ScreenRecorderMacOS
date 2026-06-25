@@ -51,7 +51,7 @@ Priority:
 Next priorities:
 
 - Add setup notes for macOS and Xcode requirements
-- Handle sleep, display disconnect, and writer failure cases gracefully
+- Handle sleep and additional writer failure cases gracefully
 - Add a configuration/viewing pane without hiding recording state
 
 Contribution rules:
