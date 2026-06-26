@@ -36,26 +36,80 @@ Additional scan context:
 
 ## Getting Started
 
-### Prerequisites
+### Supported macOS and Xcode Baseline
 
 - Git
-- macOS with Xcode for building Apple platform projects
+- macOS with Xcode and the macOS 13 SDK or newer
 - Python 3 for repository source checks
+- Swift 5 with a macOS 13 deployment target, as pinned in the Xcode project
 
 ### Setup
 
 ```bash
 git clone https://github.com/garethpaul/ScreenRecorderMacOS.git
 cd ScreenRecorderMacOS
+open ScreenRecorder.xcodeproj
 ```
 
-The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
+Select the shared `CaptureSample` scheme and the `My Mac` destination. The
+project intentionally leaves `DEVELOPMENT_TEAM` empty; command-line verification
+disables signing, while an interactive run may require a local team under the
+workstation's signing policy.
+
+### Screen Recording Permission
+
+The current capture path uses ScreenCaptureKit. On first appearance,
+`SCShareableContent` checks whether Screen Recording access is available. If it
+is denied, the app displays `No screen recording permission.`, disables its
+configuration controls, and points to **System Settings > Privacy & Security >
+Screen Recording**. Grant access there and relaunch the app if macOS requests
+it.
+
+The checked-in entitlement file includes a camera entitlement inherited from
+the sample, but the current source does not use camera APIs. Its stream
+configuration can capture screen/system audio and does not enable
+ScreenCaptureKit microphone capture.
+
+### Automatic Start Boundary
+
+After authorization, the main window starts capture automatically unless the
+persisted `userStopped` flag records an earlier explicit stop. Use the visible
+Start and Stop controls or the menu-bar control to change that intent; the menu
+bar timer reflects the recorder's actual state.
+
+### Capture Source and Audio Controls
+
+- Choose **Display** or **Window**, then select a current ScreenCaptureKit source.
+- **Exclude sample app from stream** removes this app from display capture.
+- **Capture audio** controls ScreenCaptureKit system-audio capture.
+- **Exclude app audio** omits this app's audio when the app remains in the stream.
+- While capture is running, source and audio changes update the active stream;
+  Start is disabled until Stop completes.
+
+### Local Recording Boundary
+
+Each successful session writes a UUID-named `.MOV` file in the user's
+Documents directory. After the asset writer finishes successfully, the app
+stores Core Data metadata containing the file URL and start/end times, lists
+that history, and plays the latest local recording. Failed or cancelled output
+is removed before metadata is saved. The current UI has no upload, sharing,
+export, or delete workflow.
 
 ## Running or Using the Project
 
-- Open `ScreenRecorder.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
+- Run the shared `CaptureSample` scheme on `My Mac`, authorize Screen Recording,
+  choose a display or window, configure audio/exclusion options, and use Start
+  or Stop while watching the preview and menu-bar timer.
 
 ## Testing and Verification
+
+### Canonical Verification
+
+Run:
+
+```sh
+/usr/bin/make check
+```
 
 - `make check` runs static project/source checks. When `xcodebuild` is
   installed, the `build` target also runs the shared Xcode scheme with code
@@ -80,6 +134,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   persistence, and a timeout.
 - A second hosted job performs an unsigned app build on the fixed `macos-15`
   runner, so current Xcode compilation is enforced rather than inferred.
+
+### Hosted Native Verification
+
+The hosted unsigned build proves that the shared scheme compiles on
+`macos-15`. It does not grant Screen Recording permission, enumerate a user's
+real displays/windows, capture protected content, record system audio, or prove
+the local `.MOV` playback flow. Complete those checks manually on an authorized
+Mac with synthetic, non-sensitive content.
 - Static behavior checks cover capture crash paths, recording file URL
   creation, saved URL persistence, empty playback history handling, and
   prevention of hardcoded remote player URLs.

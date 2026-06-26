@@ -1,5 +1,73 @@
 # Changes
 
+## 2026-06-26 03:24 PDT - P2 - Document supported recorder setup
+
+### Summary
+
+Completed the ScreenRecorder macOS/Xcode setup priority with source-backed
+guidance for the supported toolchain, Screen Recording authorization,
+automatic-start behavior, capture controls, local output, and verification.
+
+### Work completed
+
+- Replaced generic generated setup text with the shared scheme, destination,
+  signing, authorization, control, and local-persistence boundaries.
+- Documented the inherited camera entitlement versus the active
+  ScreenCaptureKit screen/system-audio path.
+- Added fail-closed guide, roadmap, history, and completed-plan contracts.
+
+### Threads
+
+- Started: none; the bounded documentation reconciliation was handled directly.
+- Continued: none.
+- Stopped: none.
+
+### Files changed
+
+- `README.md` — added the operational setup and manual-verification guide.
+- `VISION.md` — retired only the completed setup priority.
+- `scripts/check-capture-source.py` — added fail-closed guide contracts.
+- `docs/plans/2026-06-26-screen-recorder-setup-guide.md` — recorded the plan.
+- `CHANGES.md` — recorded this cycle and validation evidence.
+
+### Validation
+
+- Initial project checker — failed on the missing guide, roadmap, and history
+  contracts as expected.
+- Focused project checker — passed after the guide reconciliation.
+- Hostile setup-guide suite — rejected all 23 isolated README, roadmap,
+  history, and completed-plan mutations.
+- Two preliminary mutation-harness runs stopped before case 7 because the
+  wrapped System Settings Markdown phrase did not match the fixture; correcting
+  the fixture changed no repository file, and the complete rerun passed.
+- Checkout and external-directory `/usr/bin/make check` — each passed 66 Make
+  target/authority cases, project and behavior checks, and 31 existing focused
+  recording mutations. Linux truthfully skipped unavailable Xcode.
+- Source audit — matched every guide claim to the project deployment/signing
+  settings, shared scheme, ScreenCaptureKit authorization and configuration,
+  persisted stop intent, Documents/Core Data output, and pinned workflow.
+- API scan — found no camera API, ScreenCaptureKit microphone-enable, network,
+  sharing, or export path in `CaptureSample`.
+- `git diff --check` — passed; the change is limited to documentation, its
+  static contract, and the completed plan.
+- Hosted build, CodeQL, and exact-head review remain pending until the PR head
+  is available.
+
+### Bugs / findings
+
+- P2: the previous README did not identify the macOS 13 target, shared scheme,
+  Screen Recording denial behavior, automatic recording start, or local output.
+
+### Blockers
+
+- Live authorization, source enumeration, capture, audio, and playback require
+  an authorized Mac and cannot be demonstrated by portable static checks.
+
+### Next action
+
+- Require exact-head hosted contract/build and CodeQL before merge, then run
+  the same checks on the merge commit.
+
 ## 2026-06-25 12:43 PDT - P1 - Reconcile disconnected capture sources
 
 ### Summary

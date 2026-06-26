@@ -33,6 +33,7 @@ USER_STOPPED_AUTOSTART_PLAN = DOCS_PLANS / "2026-06-16-user-stopped-autostart-gu
 MENU_RECORDER_STATE_PLAN = DOCS_PLANS / "2026-06-16-menu-recorder-state-toggle.md"
 STREAM_DELEGATE_FAILURE_PLAN = DOCS_PLANS / "2026-06-17-stream-delegate-failure-cleanup.md"
 SOURCE_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-25-capture-source-reconciliation.md"
+SETUP_GUIDE_PLAN = DOCS_PLANS / "2026-06-26-screen-recorder-setup-guide.md"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "check.yml"
 MAKEFILE = ROOT / "Makefile"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -81,6 +82,43 @@ def require_paths():
 
 def docs_plan_checks():
     errors = []
+    normalized_readme = " ".join(read_text("README.md").split())
+    for contract in (
+        "Supported macOS and Xcode Baseline",
+        "macOS 13 deployment target",
+        "Swift 5",
+        "CaptureSample",
+        "My Mac",
+        "Screen Recording Permission",
+        "Privacy & Security > Screen Recording",
+        "SCShareableContent",
+        "Automatic Start Boundary",
+        "Capture Source and Audio Controls",
+        "Exclude sample app from stream",
+        "Capture audio",
+        "Exclude app audio",
+        "Local Recording Boundary",
+        "Documents directory",
+        "UUID-named `.MOV` file",
+        "Core Data metadata",
+        "Canonical Verification",
+        "/usr/bin/make check",
+        "Hosted Native Verification",
+    ):
+        if contract not in normalized_readme:
+            errors.append(f"README setup guide must preserve: {contract}")
+    normalized_vision = " ".join(read_text("VISION.md").split())
+    if "Keep macOS/Xcode setup, Screen Recording permission, automatic-start, and local-output guidance synchronized with source" not in normalized_vision:
+        errors.append("VISION must preserve the ScreenRecorder setup-guide boundary")
+    normalized_changes = " ".join(read_text("CHANGES.md").split())
+    if "Completed the ScreenRecorder macOS/Xcode setup priority" not in normalized_changes:
+        errors.append("CHANGES must record the ScreenRecorder setup-guide reconciliation")
+    if not SETUP_GUIDE_PLAN.exists():
+        errors.append("ScreenRecorder setup guide plan is missing")
+    else:
+        plan = SETUP_GUIDE_PLAN.read_text(encoding="utf-8")
+        if "Status: Completed" not in plan or "Document ScreenRecorder's supported macOS and Xcode setup" not in plan:
+            errors.append("ScreenRecorder setup guide plan must record completed evidence")
     if not CANONICAL_PLAN.exists():
         errors.append("docs/plans/2026-06-08-screen-recorder-macos-baseline.md is missing")
     if not TIMER_RESET_PLAN.exists():

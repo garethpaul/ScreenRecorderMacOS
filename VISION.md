@@ -46,11 +46,12 @@ Priority:
 - Keep completed maintenance plans under `docs/plans`
 - Keep GitHub Actions running the static `make check` baseline before review
 - Keep the unsigned app compiling on a fixed hosted macOS runner
+- Keep macOS/Xcode setup, Screen Recording permission, automatic-start, and
+  local-output guidance synchronized with source
 - Maintain README notes for known recording bugs
 
 Next priorities:
 
-- Add setup notes for macOS and Xcode requirements
 - Handle sleep and additional writer failure cases gracefully
 - Add a configuration/viewing pane without hiding recording state
 
