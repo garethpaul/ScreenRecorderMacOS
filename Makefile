@@ -41,6 +41,7 @@ test::
 	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_menu_recorder_state_contract.py'
 	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_stream_delegate_failure_contract.py'
 	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_capture_source_reconciliation_contract.py'
+	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_movie_recorder_state_lock_contract.py'
 
 build:: lint
 	@if [ -x /usr/bin/xcodebuild ]; then \

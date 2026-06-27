@@ -1,5 +1,69 @@
 # Changes
 
+## 2026-06-26 19:57 PDT - P1 - Serialize movie recorder state
+
+### Summary
+
+Protected `MovieRecorder` writer state with one lock so concurrent video,
+audio, stop, and failure-cleanup paths cannot race while appending or handing
+the writer off for finalization.
+
+### Work completed
+
+- Added a private defer-unlocked state helper around writer publication and
+  sample appends.
+- Added one atomic writer handoff used by both awaited stop and cancellation.
+- Preserved first-video-sample startup and existing append-failure propagation.
+- Added a focused source contract with eight hostile synchronization mutations.
+
+### Threads
+
+- Started: none; the bounded recorder ownership defect was handled directly.
+- Continued: none.
+- Stopped: none.
+
+### Files changed
+
+- `CaptureSample/Record.swift` — serialized mutable asset-writer state.
+- `scripts/movie_recorder_state_lock_contract.py` — encoded the lock and atomic
+  handoff invariants.
+- `scripts/test_movie_recorder_state_lock_contract.py` — added eight hostile
+  regression mutations.
+- `scripts/check-capture-source.py` and
+  `scripts/test_movie_recorder_video_start_contract.py` — reconciled existing
+  finalization and first-frame checks with the locked implementation.
+- `Makefile`, repository guidance, and the completed plan — registered and
+  documented the new boundary.
+
+### Validation
+
+- RED: the focused contract rejected the unlocked baseline across writer
+  publication, append, stop, and cancellation ownership.
+- GREEN: the focused suite passes with all eight hostile mutations rejected.
+- Existing behavior checks and the four-mutation first-video-start suite pass.
+- Repository and external-root `make check` each pass 66 Make authority cases,
+  project and behavior checks, and 39 focused mutations.
+- Python compilation and `git diff --check` pass; Linux truthfully skips
+  unavailable Xcode.
+- Hosted unsigned macOS build, CodeQL, and exact-head review remain required
+  before merge.
+
+### Bugs / findings
+
+- P1: ScreenCaptureKit delivered video and audio on separate queues while stop
+  and error cleanup could concurrently clear the same unsynchronized writer
+  properties, risking a data race during append or finalization handoff.
+
+### Blockers
+
+- Live capture concurrency still requires an authorized Mac; portable checks
+  validate source ownership and mutations rather than ScreenCaptureKit timing.
+
+### Next action
+
+- Run repository and external-root verification, then require hosted build,
+  CodeQL, and exact-head review before merging.
+
 ## 2026-06-26 03:24 PDT - P2 - Document supported recorder setup
 
 ### Summary

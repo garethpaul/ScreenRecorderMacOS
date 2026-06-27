@@ -49,6 +49,8 @@ Helpful reports include:
 - A video sample append failure must propagate through the same cleanup boundary
   instead of allowing capture to continue after the writer rejects a frame.
 - Video and audio sample append failures propagate through the shared recording cleanup path.
+- Movie writer state is lock-protected because audio, video, explicit stop, and
+  failure cleanup can arrive from different execution contexts.
 - Unexpected ScreenCaptureKit delegate stops propagate through the shared
   recording cleanup path so partial local output is cancelled.
 - Recording finalization persists history only after the asset writer reports
