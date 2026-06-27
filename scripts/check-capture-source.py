@@ -482,8 +482,20 @@ def behavior_checks():
         errors.append("CaptureEngine start failures must cancel the partial movie before finishing")
     if "func stopRecording() async -> URL?" not in record:
         errors.append("MovieRecorder stop must expose an awaitable completed-or-failed output URL")
-    if "let assetWriter = self.assetWriter\n        isRecording = false\n        self.assetWriter = nil\n        assetWriterAudioInput = nil\n        assetWriterVideoInput = nil\n\n        guard let assetWriter = assetWriter else" not in record:
-        errors.append("MovieRecorder stop must clear all recorder state before handling an absent writer")
+    if "let assetWriter = takeAssetWriter()\n\n        guard let assetWriter = assetWriter else" not in record:
+        errors.append("MovieRecorder stop must atomically detach recorder state before handling an absent writer")
+    take_writer_fragments = (
+        "private func takeAssetWriter() -> AVAssetWriter?",
+        "withStateLock {",
+        "let assetWriter = self.assetWriter",
+        "isRecording = false",
+        "self.assetWriter = nil",
+        "assetWriterAudioInput = nil",
+        "assetWriterVideoInput = nil",
+        "return assetWriter",
+    )
+    if any(fragment not in record for fragment in take_writer_fragments):
+        errors.append("MovieRecorder must clear all recorder state through its locked writer handoff")
     if "guard let assetWriter = assetWriter else {\n            return nil\n        }" not in record:
         errors.append("MovieRecorder stop must complete with no URL when no writer is active")
     if "guard assetWriter.status == .completed else {" not in record:

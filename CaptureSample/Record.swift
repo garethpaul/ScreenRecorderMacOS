@@ -15,6 +15,8 @@ private struct FinalizingAssetWriter: @unchecked Sendable {
 
 class MovieRecorder {
 
+    private let stateLock = NSLock()
+
     private var assetWriter: AVAssetWriter?
 
     private var assetWriterVideoInput: AVAssetWriterInput?
@@ -23,10 +25,16 @@ class MovieRecorder {
 
     private let videoTransform: CGAffineTransform
 
-    private(set) var isRecording = false
+    private var isRecording = false
 
     init(videoTransform: CGAffineTransform) {
         self.videoTransform = videoTransform
+    }
+
+    private func withStateLock<Result>(_ operation: () throws -> Result) rethrows -> Result {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return try operation()
     }
 
     private func documentDirectory() -> URL? {
@@ -71,19 +79,16 @@ class MovieRecorder {
         assetWriterVideoInput.transform = videoTransform
         assetWriter.add(assetWriterVideoInput)
 
-        self.assetWriter = assetWriter
-        self.assetWriterAudioInput = assetWriterAudioInput
-        self.assetWriterVideoInput = assetWriterVideoInput
-
-        isRecording = true
+        withStateLock {
+            self.assetWriter = assetWriter
+            self.assetWriterAudioInput = assetWriterAudioInput
+            self.assetWriterVideoInput = assetWriterVideoInput
+            isRecording = true
+        }
     }
 
     func stopRecording() async -> URL? {
-        let assetWriter = self.assetWriter
-        isRecording = false
-        self.assetWriter = nil
-        assetWriterAudioInput = nil
-        assetWriterVideoInput = nil
+        let assetWriter = takeAssetWriter()
 
         guard let assetWriter = assetWriter else {
             return nil
@@ -103,55 +108,65 @@ class MovieRecorder {
         }
     }
 
-    func cancelRecording() {
-        guard let assetWriter = assetWriter else {
+    private func takeAssetWriter() -> AVAssetWriter? {
+        withStateLock {
+            let assetWriter = self.assetWriter
             isRecording = false
+            self.assetWriter = nil
+            assetWriterAudioInput = nil
+            assetWriterVideoInput = nil
+            return assetWriter
+        }
+    }
+
+    func cancelRecording() {
+        guard let assetWriter = takeAssetWriter() else {
             return
         }
 
-        isRecording = false
-        self.assetWriter = nil
-        assetWriterAudioInput = nil
-        assetWriterVideoInput = nil
         assetWriter.cancelWriting()
         try? FileManager.default.removeItem(at: assetWriter.outputURL)
     }
 
     func recordVideo(sampleBuffer: CMSampleBuffer) throws {
-        guard isRecording,
-            let assetWriter = assetWriter else {
-                return
-        }
-
-        if assetWriter.status == .unknown {
-            guard assetWriter.startWriting() else {
-                throw assetWriter.error ?? MovieRecorderError.assetWriterStartFailed
+        try withStateLock {
+            guard isRecording,
+                let assetWriter = assetWriter else {
+                    return
             }
-            assetWriter.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
-        }
 
-        guard assetWriter.status == .writing,
-            let input = assetWriterVideoInput,
-            input.isReadyForMoreMediaData else {
-                return
-        }
+            if assetWriter.status == .unknown {
+                guard assetWriter.startWriting() else {
+                    throw assetWriter.error ?? MovieRecorderError.assetWriterStartFailed
+                }
+                assetWriter.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
+            }
 
-        guard input.append(sampleBuffer) else {
-            throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
+            guard assetWriter.status == .writing,
+                let input = assetWriterVideoInput,
+                input.isReadyForMoreMediaData else {
+                    return
+            }
+
+            guard input.append(sampleBuffer) else {
+                throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
+            }
         }
     }
 
     func recordAudio(sampleBuffer: CMSampleBuffer) throws {
-        guard isRecording,
-            let assetWriter = assetWriter,
-            assetWriter.status == .writing,
-            let input = assetWriterAudioInput,
-            input.isReadyForMoreMediaData else {
-                return
-        }
+        try withStateLock {
+            guard isRecording,
+                let assetWriter = assetWriter,
+                assetWriter.status == .writing,
+                let input = assetWriterAudioInput,
+                input.isReadyForMoreMediaData else {
+                    return
+            }
 
-        guard input.append(sampleBuffer) else {
-            throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
+            guard input.append(sampleBuffer) else {
+                throw assetWriter.error ?? MovieRecorderError.assetWriterAppendFailed
+            }
         }
     }
 }

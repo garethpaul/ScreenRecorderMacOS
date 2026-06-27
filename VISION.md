@@ -31,6 +31,8 @@ Priority:
 - Stop active capture when a runtime writer start failure rejects the first frame
 - Propagate video sample append failure through the existing recording cleanup path
 - Video and audio sample append failures propagate through the shared recording cleanup path.
+- Serialize movie writer publication, audio/video append, cancellation, and
+  finalization handoff through one recorder-owned state boundary
 - Unexpected ScreenCaptureKit delegate stops propagate through the shared
   recording cleanup path.
 - Remove unfinished movie files when capture setup fails

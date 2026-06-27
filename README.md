@@ -171,6 +171,8 @@ Mac with synthetic, non-sensitive content.
 - A video sample append failure follows the same cleanup path instead of
   allowing capture to continue with a failed movie writer.
 - Video and audio sample append failures propagate through the shared recording cleanup path.
+- Movie writer publication, audio/video append, cancellation, and finalization
+  handoff share one lock-protected state boundary.
 - Unexpected ScreenCaptureKit delegate stops propagate through the shared
   recording cleanup path so partial movies, continuations, and retained streams
   are not left active.
@@ -248,6 +250,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   menu start/stop and persisted-intent ordering contract.
 - See `docs/plans/2026-06-17-stream-delegate-failure-cleanup.md` for unexpected
   stream-stop routing through shared recording cleanup.
+- See `docs/plans/2026-06-26-movie-recorder-state-lock.md` for serialized writer
+  ownership across callback and stop paths.
 - See `docs/plans/2026-06-25-capture-source-reconciliation.md` for display
   disconnect and closed-window selection recovery.
 - See `docs/plans/2026-06-13-audio-sample-forwarding.md` for the recorded-audio
