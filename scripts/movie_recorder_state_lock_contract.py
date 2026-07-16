@@ -114,14 +114,17 @@ def validation_errors(source):
         "private func withStateLock<Result>",
         "    private func documentDirectory()",
     )
-    if helper is None or not all(
-        fragment in helper
-        for fragment in (
-            "stateLock.lock()",
-            "defer { stateLock.unlock() }",
-            "return try operation()",
-        )
-    ):
+    # Pin the body as one contiguous construct rather than three independent fragments.
+    # Fragment presence cannot distinguish a live lock from a dead one: wrapping the pair
+    # in `if false { ... }` keeps all three literals present and uncommented while
+    # withStateLock serializes nothing, re-opening the race commit 25c05ca closed.
+    # Contiguous-literal form copied from capture_source_reconciliation_contract.py.
+    locked_body = (
+        "        stateLock.lock()\n"
+        "        defer { stateLock.unlock() }\n"
+        "        return try operation()\n"
+    )
+    if helper is None or locked_body not in helper:
         errors.append("MovieRecorder must provide a defer-unlocked state helper")
 
     method_contracts = (
