@@ -12,6 +12,15 @@ if errors:
     raise AssertionError(f"baseline movie recorder state-lock contract invalid: {errors}")
 
 mutations = {
+    # The lock pair kept present and uncommented, but never executed. "state lock removed"
+    # and "unlock defer removed" below both delete a literal, which fragment-presence
+    # already catches; this one keeps every literal byte-identical, so only pinning the
+    # helper body as one contiguous construct rejects it.
+    "state lock neutered": baseline.replace(
+        "        stateLock.lock()\n        defer { stateLock.unlock() }\n        return try operation()\n",
+        "        if false {\n            stateLock.lock()\n            defer { stateLock.unlock() }\n        }\n        return try operation()\n",
+        1,
+    ),
     "state lock removed": baseline.replace("    private let stateLock = NSLock()\n", "", 1),
     "recording state getter exposed": baseline.replace(
         "    private var isRecording = false\n",
